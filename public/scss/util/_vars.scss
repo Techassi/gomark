@@ -1,0 +1,12 @@
+$bg: #101010;
+$bg-light: #1b1b1b;
+$accent: #E43F25;
+$accent-light: #EF6C0E;
+$accent-fade: linear-gradient(to right, $accent 0%,$accent-light 100%);
+
+%center-icon {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}

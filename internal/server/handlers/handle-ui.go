@@ -14,6 +14,10 @@ func UI_LoginPage(c *gin.Context) {
     c.HTML(http.StatusOK, "login.html", gin.H{})
 }
 
+func UI_SharedPage(c *gin.Context) {
+    c.HTML(http.StatusOK, "login.html", gin.H{})
+}
+
 func UI_RecentBookmarksPage(c *gin.Context) {
     c.HTML(http.StatusOK, "recent.html", gin.H{})
 }
@@ -23,5 +27,9 @@ func UI_BookmarksPage(c *gin.Context) {
 }
 
 func UI_BookmarkPage(c *gin.Context) {
+    c.HTML(http.StatusOK, "bookmarks-tag.html", gin.H{})
+}
+
+func UI_SharedBookmarkPage(c *gin.Context) {
     c.HTML(http.StatusOK, "bookmarks-tag.html", gin.H{})
 }

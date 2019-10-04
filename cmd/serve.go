@@ -16,9 +16,8 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/Techassi/gomark/internal/server"
+	"github.com/Techassi/gomark/internal/database"
 
 	"github.com/spf13/cobra"
 )
@@ -34,8 +33,11 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(args)
-		server.Startup(":8090")
+		db, err := database.Open()
+		if err != nil {
+			panic(err)
+		}
+		server.Startup(db, ":8090")
 	},
 }
 
