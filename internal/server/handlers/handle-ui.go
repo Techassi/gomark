@@ -14,6 +14,10 @@ func UI_LoginPage(c *gin.Context) {
     c.HTML(http.StatusOK, "login.html", gin.H{})
 }
 
+func UI_RegisterPage(c *gin.Context) {
+    c.HTML(http.StatusOK, "register.html", gin.H{})
+}
+
 func UI_SharedPage(c *gin.Context) {
     c.HTML(http.StatusOK, "login.html", gin.H{})
 }

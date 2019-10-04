@@ -34,8 +34,8 @@ func Startup(db *gorm.DB, port string) {
 	r.Use(mw.InjectDB(db))
 
     authMiddleware, err := jwt.New(&jwt.GinJWTMiddleware{
-		Realm:       "test zone",
-		Key:         []byte("secret key"),
+		Realm:       "Gomark",
+		Key:         []byte("JcExCbVJC>Jc4vLcSBG13l4TF2ZayRaXfWF18NaLR!k87fGPR9t2wVGVKWp3k5VA"),
 		Timeout:     time.Hour,
 		MaxRefresh:  time.Hour,
 		IdentityKey: identityKey,
@@ -61,6 +61,7 @@ func Startup(db *gorm.DB, port string) {
 			userID := loginVals.Username
 			password := loginVals.Password
 
+            // rewrite this to check if empty
 			if (userID == "admin" && password == "admin") || (userID == "test" && password == "test") {
 				return &m.User{
 					UserName:  userID,
@@ -72,6 +73,7 @@ func Startup(db *gorm.DB, port string) {
 			return nil, jwt.ErrFailedAuthentication
 		},
 		Authorizator: func(data interface{}, c *gin.Context) bool {
+            // check for account in database
 			if v, ok := data.(*m.User); ok && v.UserName == "admin" {
 				return true
 			}
@@ -138,6 +140,7 @@ func Startup(db *gorm.DB, port string) {
         auth.GET("/refresh", authMiddleware.RefreshHandler)
 
         auth.POST("/login", authMiddleware.LoginHandler)
+        auth.POST("/register", handle.AUTH_Register)
         auth.POST("/logout", handle.AUTH_Logout)
     }
 
