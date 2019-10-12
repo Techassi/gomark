@@ -9,15 +9,15 @@ import (
     mw "github.com/Techassi/gomark/internal/server/middlewares"
     m "github.com/Techassi/gomark/internal/server/models"
     "github.com/Techassi/gomark/internal/util"
+    "github.com/Techassi/gomark/internal/database"
 
     "github.com/appleboy/gin-jwt/v2"
     "github.com/gin-gonic/gin"
-    "github.com/jinzhu/gorm"
 )
 
 var identityKey = "id"
 
-func Startup(db *gorm.DB, port string) {
+func Startup(db database.DB, port string) {
     r := gin.Default()
 
     // Load templates
