@@ -41,8 +41,10 @@ func AUTH_Register(c *gin.Context) {
         switch err {
             case "USERNAME_INVALID":
                 status.UsernameInvalid(c)
+                return
             case "EMAIL_INVALID":
                 status.EMailInvalid(c)
+                return
         }
 
         status.AccountNotCreated(c)
