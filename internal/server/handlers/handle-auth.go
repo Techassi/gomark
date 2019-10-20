@@ -36,3 +36,7 @@ func AUTH_Register(c *gin.Context) {
 
     status.AccountCreated(c)
 }
+
+func AUTH_CheckCredentials(username, password string) (bool) {
+    return models.CheckIfValidCredentials(username, password)
+}

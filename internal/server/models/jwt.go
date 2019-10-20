@@ -6,7 +6,6 @@ type Login struct {
 }
 
 type User struct {
-	UserName  string
-	FirstName string
-	LastName  string
+	Username string
+	Password string
 }

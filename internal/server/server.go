@@ -37,7 +37,7 @@ func Startup(port string) {
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
 			if v, ok := data.(*m.User); ok {
 				return jwt.MapClaims{
-					identityKey: v.UserName,
+					identityKey: v.Username,
 				}
 			}
 			return jwt.MapClaims{}
@@ -45,7 +45,7 @@ func Startup(port string) {
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c)
 			return &m.User{
-				UserName: claims[identityKey].(string),
+				Username: claims[identityKey].(string),
 			}
 		},
 		Authenticator: func(c *gin.Context) (interface{}, error) {
@@ -53,24 +53,22 @@ func Startup(port string) {
 			if err := c.ShouldBind(&loginVals); err != nil {
 				return "", jwt.ErrMissingLoginValues
 			}
-			userID := loginVals.Username
-			password := loginVals.Password
 
-            // rewrite this to check if empty
-			if (userID == "admin" && password == "admin") || (userID == "test" && password == "test") {
-				return &m.User{
-					UserName:  userID,
-					LastName:  "Bo-Yi",
-					FirstName: "Wu",
-				}, nil
-			}
+			un := loginVals.Username
+			pw := loginVals.Password
+
+            if un != "" && pw != "" && handle.AUTH_CheckCredentials(un, pw) {
+                return &m.User{
+                    Username: un,
+                    Password: pw,
+                }, nil
+            }
 
 			return nil, jwt.ErrFailedAuthentication
 		},
 		Authorizator: func(data interface{}, c *gin.Context) bool {
-            // check for account in database
-			if v, ok := data.(*m.User); ok && v.UserName == "admin" {
-				return true
+			if v, ok := data.(*m.User); ok && v.Username != "" {
+                return true
 			}
 
 			return false
@@ -122,8 +120,8 @@ func Startup(port string) {
     // V1 API routes
     v1 := r.Group("/api/v1")
     {
-        v1.GET("recent", handle.API_GetRecentBookmarks)
-        v1.GET("bookmarks", handle.API_GetBookmarks)
+        v1.GET("/recent", handle.API_GetRecentBookmarks)
+        v1.GET("/bookmarks", handle.API_GetBookmarks)
         v1.GET("/bookmarks/:hash", handle.API_GetBookmark)
         v1.GET("/bookmarks/:hash/tags", handle.API_GetBookmarkTags)
 

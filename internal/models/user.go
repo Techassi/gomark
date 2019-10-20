@@ -35,7 +35,7 @@ func CreateUser(new User) (string) {
     }
 
     new.Email    = sanitizeEmail(new.Email)
-    new.Password = hashPassword(new)
+    new.Password = hashPassword(new.Username, new.Password)
     new.Username = sanitizeUsername(new.Username)
 
     db.Create(&new)
@@ -58,7 +58,7 @@ func usernameInvalid(new User) (bool) {
     }
 
     // Check if username is already taken
-    if FindUsersWithUsername(new.Username) > 0 {
+    if findUsersWithUsername(new.Username) > 0 {
         return true
     }
 
@@ -74,7 +74,7 @@ func emailInvalid(new User) (bool) {
     }
 
     // Check if email is already taken
-    if FindUsersWithEmail(email) > 0 {
+    if findUsersWithEmail(email) > 0 {
         return true
     }
 
@@ -91,13 +91,13 @@ func sanitizeUsername(username string) (string) {
     return strings.Replace(strings.TrimSpace(username), " ", "_", -1)
 }
 
-func hashPassword(new User) (string) {
+func hashPassword(un, pw string) (string) {
     user     := sha256.New()
     password := sha256.New()
     salted   := sha256.New()
 
-    user.Write([]byte(new.Username))
-    password.Write([]byte(new.Password))
+    user.Write([]byte(un))
+    password.Write([]byte(pw))
 
     salted.Write([]byte(fmt.Sprintf("%s%s", user, password)))
 
