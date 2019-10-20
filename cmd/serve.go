@@ -17,12 +17,10 @@ package cmd
 
 import (
 	"github.com/Techassi/gomark/internal/server"
-	"github.com/Techassi/gomark/internal/database"
+	"github.com/Techassi/gomark/internal/models"
 
 	"github.com/spf13/cobra"
 )
-
-var db database.DB
 
 // serveCmd represents the serve command
 var serveCmd = &cobra.Command{
@@ -35,8 +33,8 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		db = openDatabase()
-		server.Startup(db, ":8090")
+		models.OpenMySQL()
+		server.Startup(":8090")
 	},
 }
 
@@ -52,8 +50,4 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// serveCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-}
-
-func openDatabase() (database.DB) {
-    return database.OpenMySQL()
 }

@@ -6,10 +6,8 @@ import (
     "net/http"
 
     handle "github.com/Techassi/gomark/internal/server/handlers"
-    mw "github.com/Techassi/gomark/internal/server/middlewares"
     m "github.com/Techassi/gomark/internal/server/models"
     "github.com/Techassi/gomark/internal/util"
-    "github.com/Techassi/gomark/internal/database"
 
     "github.com/appleboy/gin-jwt/v2"
     "github.com/gin-gonic/gin"
@@ -17,7 +15,7 @@ import (
 
 var identityKey = "id"
 
-func Startup(db database.DB, port string) {
+func Startup(port string) {
     r := gin.Default()
 
     // Load templates
@@ -29,9 +27,6 @@ func Startup(db database.DB, port string) {
 	r.Static("/favicon", util.GetAbsPath("public/assets/favicon"))
 	r.Static("/font", util.GetAbsPath("public/assets/fonts"))
 	// r.Static("/image", helper.JoinPaths(conf.Paths.WWWDir.Path, "/images"))
-
-    // Inject Database Connection into handlers
-	r.Use(mw.InjectDB(db))
 
     authMiddleware, err := jwt.New(&jwt.GinJWTMiddleware{
 		Realm:       "Gomark",
@@ -116,10 +111,12 @@ func Startup(db database.DB, port string) {
     protected.Use(authMiddleware.MiddlewareFunc())
     {
         protected.GET("/", handle.UI_HomePage)
+        protected.GET("/notes", handle.UI_NotesPage)
         protected.GET("/shared", handle.UI_SharedPage)
         protected.GET("/recent", handle.UI_RecentBookmarksPage)
         protected.GET("/bookmarks", handle.UI_BookmarksPage)
         protected.GET("/b/:hash", handle.UI_BookmarkPage)
+        protected.GET("/n/:hash", handle.UI_NotePage)
     }
 
     // V1 API routes
