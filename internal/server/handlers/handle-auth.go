@@ -1,11 +1,42 @@
 package handlers
 
 import (
+    "net/http"
+    "strings"
+
     "github.com/Techassi/gomark/internal/models"
     "github.com/Techassi/gomark/internal/server/status"
 
+    "github.com/gin-contrib/sessions"
     "github.com/gin-gonic/gin"
 )
+
+func AUTH_Login(c *gin.Context) {
+    session := sessions.Default(c)
+	username := c.PostForm("username")
+	password := c.PostForm("password")
+
+	// Validate form input
+	if strings.Trim(username, " ") == "" || strings.Trim(password, " ") == "" {
+		status.InvalidParameters(c)
+		return
+	}
+
+	// Check for username and password match
+	if !AUTH_CheckCredentials(username, password) {
+		status.InvalidCredentials(c)
+		return
+	}
+
+	// Save the username in the session
+	session.Set("test", username) // In real world usage you'd set this to the users ID
+	if err := session.Save(); err != nil {
+		status.FailedToSaveSession(c)
+		return
+	}
+
+	c.Redirect(http.StatusMovedPermanently, "/")
+}
 
 func AUTH_Logout(c *gin.Context) {
     return

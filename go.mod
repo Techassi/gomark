@@ -2,6 +2,7 @@ module github.com/Techassi/gomark
 
 require (
 	github.com/appleboy/gin-jwt/v2 v2.6.2
+	github.com/gin-contrib/sessions v0.0.1
 	github.com/gin-gonic/gin v1.4.1-0.20191002234641-4fd3234840db
 	github.com/go-playground/universal-translator v0.16.1-0.20170327191703-71201497bace // indirect
 	github.com/golang/protobuf v1.3.3-0.20190920234318-1680a479a2cf // indirect

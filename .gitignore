@@ -1,1 +1,2 @@
 *.exe
+public/js/node_modules/*

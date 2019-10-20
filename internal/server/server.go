@@ -1,19 +1,18 @@
 package server
 
 import (
-    "log"
-    "time"
+    "strings"
     "net/http"
 
     handle "github.com/Techassi/gomark/internal/server/handlers"
-    m "github.com/Techassi/gomark/internal/server/models"
+    mw "github.com/Techassi/gomark/internal/server/middlewares"
     "github.com/Techassi/gomark/internal/util"
 
-    "github.com/appleboy/gin-jwt/v2"
+    "github.com/gin-contrib/sessions"
+    "github.com/gin-contrib/sessions/cookie"
     "github.com/gin-gonic/gin"
 )
 
-var identityKey = "id"
 
 func Startup(port string) {
     r := gin.Default()
@@ -28,85 +27,18 @@ func Startup(port string) {
 	r.Static("/font", util.GetAbsPath("public/assets/fonts"))
 	// r.Static("/image", helper.JoinPaths(conf.Paths.WWWDir.Path, "/images"))
 
-    authMiddleware, err := jwt.New(&jwt.GinJWTMiddleware{
-		Realm:       "Gomark",
-		Key:         []byte("JcExCbVJC>Jc4vLcSBG13l4TF2ZayRaXfWF18NaLR!k87fGPR9t2wVGVKWp3k5VA"),
-		Timeout:     time.Hour,
-		MaxRefresh:  time.Hour,
-		IdentityKey: identityKey,
-		PayloadFunc: func(data interface{}) jwt.MapClaims {
-			if v, ok := data.(*m.User); ok {
-				return jwt.MapClaims{
-					identityKey: v.Username,
-				}
-			}
-			return jwt.MapClaims{}
-		},
-		IdentityHandler: func(c *gin.Context) interface{} {
-			claims := jwt.ExtractClaims(c)
-			return &m.User{
-				Username: claims[identityKey].(string),
-			}
-		},
-		Authenticator: func(c *gin.Context) (interface{}, error) {
-			var loginVals m.Login
-			if err := c.ShouldBind(&loginVals); err != nil {
-				return "", jwt.ErrMissingLoginValues
-			}
-
-			un := loginVals.Username
-			pw := loginVals.Password
-
-            if un != "" && pw != "" && handle.AUTH_CheckCredentials(un, pw) {
-                return &m.User{
-                    Username: un,
-                    Password: pw,
-                }, nil
-            }
-
-			return nil, jwt.ErrFailedAuthentication
-		},
-		Authorizator: func(data interface{}, c *gin.Context) bool {
-			if v, ok := data.(*m.User); ok && v.Username != "" {
-                return true
-			}
-
-			return false
-		},
-		Unauthorized: func(c *gin.Context, code int, message string) {
-			c.Redirect(http.StatusMovedPermanently, "/login")
-		},
-		// TokenLookup is a string in the form of "<source>:<name>" that is used
-		// to extract token from the request.
-		// Optional. Default value "header:Authorization".
-		// Possible values:
-		// - "header:<name>"
-		// - "query:<name>"
-		// - "cookie:<name>"
-		// - "param:<name>"
-		TokenLookup: "header: Authorization, query: token, cookie: jwt",
-		// TokenLookup: "query:token",
-		// TokenLookup: "cookie:token",
-
-		// TokenHeadName is a string in the header. Default value is "Bearer"
-		TokenHeadName: "Bearer",
-
-		// TimeFunc provides the current time. You can override it to use another time value. This is useful for testing or if your server uses a different time zone than your tokens.
-		TimeFunc: time.Now,
-	})
-
-	if err != nil {
-		log.Fatal("JWT Error:" + err.Error())
-	}
+    r.Use(sessions.Sessions("gomark", cookie.NewStore([]byte("secret"))))
 
     // Unprotected frontend routes
     r.GET("/login", handle.UI_LoginPage)
     r.GET("/register", handle.UI_RegisterPage)
     r.GET("/s/:hash", handle.UI_SharedBookmarkPage)
 
+    r.GET("404", handle.UI_404ErrorPage)
+
     // Protected frontend routes
     protected := r.Group("")
-    protected.Use(authMiddleware.MiddlewareFunc())
+    protected.Use(mw.ValidateSession)
     {
         protected.GET("/", handle.UI_HomePage)
         protected.GET("/notes", handle.UI_NotesPage)
@@ -132,17 +64,19 @@ func Startup(port string) {
     // Authentication routes
     auth := r.Group("auth")
     {
-        auth.GET("/refresh", authMiddleware.RefreshHandler)
+        auth.GET("/refresh", handle.AUTH_Login)
 
-        auth.POST("/login", authMiddleware.LoginHandler)
+        auth.POST("/login", handle.AUTH_Login)
         auth.POST("/register", handle.AUTH_Register)
         auth.POST("/logout", handle.AUTH_Logout)
     }
 
-    r.NoRoute(authMiddleware.MiddlewareFunc(), func(c *gin.Context) {
-		claims := jwt.ExtractClaims(c)
-		log.Printf("NoRoute claims: %#v\n", claims)
-		c.JSON(404, gin.H{"code": "PAGE_NOT_FOUND", "message": "Page not found"})
+    r.NoRoute(func(c *gin.Context) {
+        if strings.Contains(c.Request.Header.Get("Accept"), "text") {
+            c.Redirect(http.StatusMovedPermanently, "/404")
+            return
+        }
+        c.JSON(404, gin.H{"code": "PAGE_NOT_FOUND", "message": "Page not found"})
 	})
 
     r.Run(port)

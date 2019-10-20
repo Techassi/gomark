@@ -45,3 +45,7 @@ func UI_BookmarkPage(c *gin.Context) {
 func UI_SharedBookmarkPage(c *gin.Context) {
     c.HTML(http.StatusOK, "bookmarks-tag.html", gin.H{})
 }
+
+func UI_404ErrorPage(c *gin.Context) {
+    c.HTML(http.StatusOK, "404.html", gin.H{})
+}
