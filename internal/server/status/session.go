@@ -19,5 +19,9 @@ func InvalidCredentials(c *gin.Context) {
 }
 
 func FailedToSaveSession(c *gin.Context) {
-    c.JSON(http.StatusOK, gin.H{"status": http.StatusInternalServerError, "message": "Faied to save session", "action": "failed_to_save"})
+    c.JSON(http.StatusOK, gin.H{"status": http.StatusInternalServerError, "message": "Failed to save session", "action": "failed_to_save"})
+}
+
+func LoggedIn(c *gin.Context) {
+    c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "message": "Successfuly logged in", "action": "logged_in"})
 }

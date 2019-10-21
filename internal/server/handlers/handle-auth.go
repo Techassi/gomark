@@ -1,7 +1,6 @@
 package handlers
 
 import (
-    "net/http"
     "strings"
 
     "github.com/Techassi/gomark/internal/models"
@@ -35,7 +34,7 @@ func AUTH_Login(c *gin.Context) {
 		return
 	}
 
-	c.Redirect(http.StatusMovedPermanently, "/")
+	status.LoggedIn(c)
 }
 
 func AUTH_Logout(c *gin.Context) {

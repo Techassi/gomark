@@ -27,7 +27,41 @@ export default class Login {
         }
 
         this.sendLoginRequest = () => {
-            
+            let credentials = new FormData();
+            credentials.append('username', this.store.dom.username.value)
+            credentials.append('password', this.store.dom.password.value)
+
+            fetch('http://127.0.0.1:8090/auth/login', {
+                method: 'POST',
+                body: credentials
+            })
+            .then((res) => {
+                if (res.ok) {
+                    return res.json();
+                } else {
+                    throw new Error(res.statusText);
+                }
+            })
+            .then((json) => {
+                if (json.status != 200) {
+                    // throw new Error(json.message);
+
+                    if (json.action == 'parameters_invalid') {
+                        console.log('Your credentials cannot be empty');
+                    } else if (json.action == 'credentials_invalid') {
+                        console.log('Your credentials are invalid');
+                    } else {
+                        console.log('There was an error loggin you in');
+                    }
+
+                    return
+                }
+
+                window.location.replace('/');
+            })
+            .catch((err) => {
+                throw new Error(err);
+            });
         }
     }
 }
