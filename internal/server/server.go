@@ -13,7 +13,6 @@ import (
     "github.com/gin-gonic/gin"
 )
 
-
 func Startup(port string) {
     r := gin.Default()
 

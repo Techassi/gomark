@@ -12,6 +12,7 @@ type Entity struct {
     Type          string       `json:"type"`
     Hash          string       `json:"hash"`
     Name          string       `json:"name"`
+    Shared        bool         `json:"shared"`
     FolderData    FolderData   `json:"folder_data,omitempty"`
     NoteData      NoteData     `json:"note_data,omitempty"`
     BookmarkData  BookmarkData `json:"bookmark_data,omitempty"`
