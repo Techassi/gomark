@@ -2,7 +2,7 @@ const path = require('path');
 
 module.exports = {
     entry: {
-        app: './src/app.js'
+        app: './src/*.js'
     },
     output: {
         filename: '[name].min.js',

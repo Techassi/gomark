@@ -1,52 +1,48 @@
-
-/////////////////////////////////////////////
-////////////// SIDE NAVIGATION //////////////
-/////////////////////////////////////////////
-
 %nav-item {
-    height: 50px;
-    width: 100%;
-    transition: .2s;
+	height: 50px;
+	width: 100%;
+	transition: 0.2s;
 
-    &:hover {
-        background: $accent-light;
-    }
+	&:hover {
+		background: $accent-light;
+	}
 }
 
 nav.side {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 50px;
-    background: $bg;
+	position: fixed;
+	top: 0;
+	left: 0;
+	height: 100%;
+	width: 50px;
+	background: $bg;
 
-    .nav_home {
-        @extend %nav-item;
-        background: $accent-fade;
+	.nav_home {
+		@extend %nav-item;
+		background: $accent-fade;
 
-        &:hover {
-            background: $accent-fade;
-        }
-    }
+		&:hover {
+			background: $accent-fade;
+		}
+	}
 
-    .nav_recent {
-        @extend %nav-item;
-        margin: 50px 0 0 0;
-    }
+	.nav_recent {
+		@extend %nav-item;
+		margin: 50px 0 0;
+	}
 
-    .nav_shared, .nav_bookmarks {
-        @extend %nav-item;
-    }
+	.nav_bookmarks,
+	.nav_shared {
+		@extend %nav-item;
+	}
 
-    a {
-        color: #FFF;
-        display: block;
-        height: 100%;
-        position: relative;
+	a {
+		color: #FFF;
+		display: block;
+		height: 100%;
+		position: relative;
 
-        i {
-            @extend %center-icon;
-        }
-    }
+		i {
+			@extend %center-icon;
+		}
+	}
 }

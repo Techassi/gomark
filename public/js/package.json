@@ -12,10 +12,10 @@
   "license": "ISC",
   "devDependencies": {
     "webpack": "^4.41.2",
-    "webpack-cli": "^3.3.9"
+    "webpack-cli": "^3.3.10"
   },
   "dependencies": {
-    "@barba/core": "^2.6.0"
+    "@barba/core": "^2.9.2"
   },
   "main": "webpack.config.js",
   "description": ""
