@@ -1,65 +1,41 @@
 package models
 
 import (
-    "fmt"
+	"fmt"
 
-    "github.com/Techassi/gomark/internal/constants"
-
-    "github.com/jinzhu/gorm"
-    _ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
-var db *gorm.DB
-var err error
-
-/////////////////////////////////////////////
-////////////// OPEN DATABASE ////////////////
-/////////////////////////////////////////////
-
-func OpenMySQL() {
-    conn := fmt.Sprintf("%s:%s@/%s?%s", "root", "", "gomark", constants.STORE_PARAMS)
-    db, err = gorm.Open("mysql", conn)
-    if err != nil {
-        panic(err)
-    }
-
-    db = db.Set("gorm:table_options", constants.STORE_TABLE_OPTIONS)
-
-    db.AutoMigrate(
-		&User{},
-		&Entity{},
-        &NoteData{},
-		&FolderData{},
-		&BookmarkData{},
-	)
+// DB is the top-level Database instance.
+type DB struct {
+	Conn *gorm.DB
 }
 
-/////////////////////////////////////////////
-//////// CHECK IF VALID CREDENTIALS /////////
-/////////////////////////////////////////////
+// Init sets up the Database connection. This function will panic if the connection
+// isn't possible.
+func (d *DB) Init(c *Config) {
+	db, err := gorm.Open("mysql", Connection(c))
+	if err != nil {
+		panic(err)
+	}
 
-func CheckIfValidCredentials(username, password string) (bool) {
-    users := []User{}
-    hashedPassword := hashPassword(username, password)
-    db.Where("username = ? AND password = ?", username, hashedPassword).Find(&users)
-
-    if len(users) == 1 {
-        return true
-    }
-
-    return false
+	d.Conn = db
 }
 
-func findUsersWithUsername(username string) (int) {
-    users := []User{}
-    db.Where("username = ?", username).Find(&users)
-
-    return len(users)
+// Connection creates the connection string and returns it.
+func Connection(c *Config) string {
+	return fmt.Sprintf("%s:%s@(%s)/%s?charset=utf8&parseTime=True&loc=Local", c.DB.User, c.DB.Password, c.DB.Host, c.DB.Database)
 }
 
-func findUsersWithEmail(email string) (int) {
-    users := []User{}
-    db.Where("email = ?", email).Find(&users)
+func (d *DB) ValidCredentials(u User) bool {
+	user := &User{}
 
-    return len(users)
+	if !d.Conn.HasTable(user) {
+		return false
+	}
+
+	r := d.Conn.Where("username = ? AND password = ?", u.Username, u.Password).First(user).RecordNotFound()
+
+	return r
 }

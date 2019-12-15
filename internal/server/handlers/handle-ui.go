@@ -1,65 +1,63 @@
 package handlers
 
 import (
-    "net/http"
+	"net/http"
 
-    "github.com/Techassi/gomark/internal/models"
-
-    "github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 )
 
-func UI_HomePage(c *gin.Context) {
-    c.HTML(http.StatusOK, "home.html", gin.H{
-        "entities": models.GetEntities(),
-    })
+// Authentication pages
+
+func UI_LoginPage(c echo.Context) error {
+	return c.Render(http.StatusOK, "login.html", map[string]interface{}{})
 }
 
-func UI_LoginPage(c *gin.Context) {
-    c.HTML(http.StatusOK, "login.html", gin.H{})
+func UI_RegisterPage(c echo.Context) error {
+	return c.Render(http.StatusOK, "register.html", map[string]interface{}{})
 }
 
-func UI_RegisterPage(c *gin.Context) {
-    c.HTML(http.StatusOK, "register.html", gin.H{})
+// Error pages
+
+func UI_404Page(c echo.Context) error {
+	return c.Render(http.StatusOK, "404.html", map[string]interface{}{})
 }
 
-func UI_NotesPage(c *gin.Context) {
-    c.HTML(http.StatusOK, "login.html", gin.H{
-        "entities": models.GetNotes(),
-    })
+// Bookmark pages
+
+func UI_SharedBookmarkPage(c echo.Context) error {
+	return c.Render(http.StatusOK, "shared-bookmark.html", map[string]interface{}{})
 }
 
-func UI_SharedPage(c *gin.Context) {
-    c.HTML(http.StatusOK, "login.html", gin.H{
-        "entities": models.GetSharedEntities(),
-    })
+func UI_RecentBookmarksPage(c echo.Context) error {
+	return c.Render(http.StatusOK, "recent-bookmarks.html", map[string]interface{}{})
 }
 
-func UI_RecentBookmarksPage(c *gin.Context) {
-    c.HTML(http.StatusOK, "recent.html", gin.H{
-        "entities": models.GetRecentEntities(),
-    })
+func UI_BookmarksPage(c echo.Context) error {
+	return c.Render(http.StatusOK, "bookmarks.html", map[string]interface{}{})
 }
 
-func UI_BookmarksPage(c *gin.Context) {
-    c.HTML(http.StatusOK, "bookmarks.html", gin.H{
-        "entities": models.GetBookmarks(),
-    })
+func UI_BookmarkPage(c echo.Context) error {
+	return c.Render(http.StatusOK, "bookmark.html", map[string]interface{}{})
 }
 
-func UI_NotePage(c *gin.Context) {
-    c.HTML(http.StatusOK, "bookmarks-tag.html", gin.H{
-        "entity": models.GetNote(),
-    })
+// Note pages
+
+func UI_NotePage(c echo.Context) error {
+	return c.Render(http.StatusOK, "note.html", map[string]interface{}{})
 }
 
-func UI_BookmarkPage(c *gin.Context) {
-    c.HTML(http.StatusOK, "bookmarks-tag.html", gin.H{})
+func UI_NotesPage(c echo.Context) error {
+	return c.Render(http.StatusOK, "notes.html", map[string]interface{}{})
 }
 
-func UI_SharedBookmarkPage(c *gin.Context) {
-    c.HTML(http.StatusOK, "bookmarks-tag.html", gin.H{})
+// Dashboard pages
+
+func UI_DashboardPage(c echo.Context) error {
+	return c.Render(http.StatusOK, "dashboard.html", map[string]interface{}{})
 }
 
-func UI_404ErrorPage(c *gin.Context) {
-    c.HTML(http.StatusOK, "404.html", gin.H{})
+// Shared pages
+
+func UI_SharedPage(c echo.Context) error {
+	return c.Render(http.StatusOK, "shared.html", map[string]interface{}{})
 }

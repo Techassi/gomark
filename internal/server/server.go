@@ -1,82 +1,136 @@
 package server
 
 import (
-    "strings"
-    "net/http"
+	"fmt"
+	"html/template"
+	"io"
+	"strconv"
 
-    handle "github.com/Techassi/gomark/internal/server/handlers"
-    mw "github.com/Techassi/gomark/internal/server/middlewares"
-    "github.com/Techassi/gomark/internal/util"
+	m "github.com/Techassi/gomark/internal/models"
+	handle "github.com/Techassi/gomark/internal/server/handlers"
+	"github.com/Techassi/gomark/internal/util"
 
-    "github.com/gin-contrib/sessions"
-    "github.com/gin-contrib/sessions/cookie"
-    "github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
-func Startup(port string) {
-    r := gin.Default()
+// Server is the top-level instance.
+type Server struct {
+	Port int
+	Mux  *echo.Echo
+	App  *m.App
+}
 
-    // Load templates
-    r.LoadHTMLGlob(util.GetAbsPath("templates/*/*.html"))
+// New initiates a new Server instance and returns it.
+func New(app *m.App) *Server {
+	s := &Server{}
+	s.Init(app)
 
-    // Static routes
-    r.Static("/style", util.GetAbsPath("public/scss"))
-	r.Static("/js", util.GetAbsPath("public/js/dist"))
-	r.Static("/favicon", util.GetAbsPath("public/assets/favicon"))
-	r.Static("/font", util.GetAbsPath("public/assets/fonts"))
-	// r.Static("/image", helper.JoinPaths(conf.Paths.WWWDir.Path, "/images"))
+	return s
+}
 
-    r.Use(sessions.Sessions("gomark", cookie.NewStore([]byte("secret"))))
+// Init sets up some basic parameters of the provided Server instance.
+func (s *Server) Init(app *m.App) {
+	s.Port = app.Config.Server.Port
+	s.Mux = echo.New()
 
-    // Unprotected frontend routes
-    r.GET("/login", handle.UI_LoginPage)
-    r.GET("/register", handle.UI_RegisterPage)
-    r.GET("/s/:hash", handle.UI_SharedBookmarkPage)
+	// Set debug mode (only for development)
+	s.Mux.Debug = true
 
-    r.GET("404", handle.UI_404ErrorPage)
+	// Hide startup message
+	s.Mux.HideBanner = true
 
-    // Protected frontend routes
-    protected := r.Group("")
-    protected.Use(mw.ValidateSession)
-    {
-        protected.GET("/", handle.UI_HomePage)
-        protected.GET("/notes", handle.UI_NotesPage)
-        protected.GET("/shared", handle.UI_SharedPage)
-        protected.GET("/recent", handle.UI_RecentBookmarksPage)
-        protected.GET("/bookmarks", handle.UI_BookmarksPage)
-        protected.GET("/b/:hash", handle.UI_BookmarkPage)
-        protected.GET("/n/:hash", handle.UI_NotePage)
-    }
+	// Register template renderer
+	s.Mux.Renderer = &TemplateRenderer{
+		Templates: template.Must(template.ParseGlob(util.GetAbsPath("templates/*/*.html"))),
+	}
 
-    // V1 API routes
-    v1 := r.Group("/api/v1")
-    {
-        v1.GET("/recent", handle.API_GetRecentBookmarks)
-        v1.GET("/bookmarks", handle.API_GetBookmarks)
-        v1.GET("/bookmarks/:hash", handle.API_GetBookmark)
-        v1.GET("/bookmarks/:hash/tags", handle.API_GetBookmarkTags)
+	// Register middlewares
+	s.Mux.Use(middleware.Logger())
+	s.Mux.Use(middleware.Recover())
 
-        v1.POST("/bookmarks", handle.API_PostBookmark)
-        v1.POST("/bookmarks/:hash/tags", handle.API_PostBookmarkTags)
-    }
+	// Enable GZIP compression
+	s.Mux.Use(middleware.GzipWithConfig(middleware.GzipConfig{
+		Level: 5,
+	}))
 
-    // Authentication routes
-    auth := r.Group("auth")
-    {
-        auth.GET("/refresh", handle.AUTH_Login)
+	s.App = app
+}
 
-        auth.POST("/login", handle.AUTH_Login)
-        auth.POST("/register", handle.AUTH_Register)
-        auth.POST("/logout", handle.AUTH_Logout)
-    }
+// Startup spins up the router, adds all routes and listens on the provided port.
+// It panics when the router couldn't be started. Panics in the call chain
+// will recover, print a stack trace and the HTTPErrorHandler handles the panic.
+func (s *Server) Run() {
+	// Static routes
+	s.Mux.Static("/static", util.GetAbsPath("public"))
 
-    r.NoRoute(func(c *gin.Context) {
-        if strings.Contains(c.Request.Header.Get("Accept"), "text") {
-            c.Redirect(http.StatusMovedPermanently, "/404")
-            return
-        }
-        c.JSON(404, gin.H{"code": "PAGE_NOT_FOUND", "message": "Page not found"})
+	// Unprotected routes
+	s.Mux.GET("/login", handle.UI_LoginPage)
+	s.Mux.GET("/register", handle.UI_RegisterPage)
+	s.Mux.GET("/s/:hash", handle.UI_SharedBookmarkPage)
+
+	// Custom 404 error page
+	s.Mux.GET("/404", handle.UI_404Page)
+
+	s.Mux.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			c.Set("app", s.App)
+			return next(c)
+		}
 	})
 
-    r.Run(port)
+	// Protected routes
+	pr := s.Mux.Group("")
+	pr.Use(middleware.JWTWithConfig(middleware.JWTConfig{
+		SigningKey:              []byte("secret"),
+		TokenLookup:             "cookie:token",
+		ErrorHandlerWithContext: handle.AUTH_JWTError,
+	}))
+
+	pr.GET("/", handle.UI_DashboardPage)
+	pr.GET("/notes", handle.UI_NotesPage)
+	pr.GET("/shared", handle.UI_SharedPage)
+	pr.GET("/recent", handle.UI_RecentBookmarksPage)
+	pr.GET("/bookmarks", handle.UI_BookmarksPage)
+	pr.GET("/b/:hash", handle.UI_BookmarkPage)
+	pr.GET("/n/:hash", handle.UI_NotePage)
+
+	// API routes
+	api := s.Mux.Group("/api")
+
+	// v1 API routes
+	v1 := api.Group("/v1")
+	v1.GET("/recent", handle.API_GetRecentBookmarks)
+	v1.GET("/bookmarks", handle.API_GetBookmarks)
+	v1.GET("/bookmarks/:hash", handle.API_GetBookmark)
+	v1.GET("/bookmarks/:hash/tags", handle.API_GetBookmarkTags)
+
+	v1.POST("/bookmarks", handle.API_PostBookmark)
+	v1.POST("/bookmarks/:hash/tags", handle.API_PostBookmarkTags)
+
+	// Auth routes
+	auth := s.Mux.Group("/auth")
+	auth.POST("/login", handle.AUTH_JWTLogin)
+	auth.POST("/logout", handle.AUTH_JWTLogout)
+	auth.POST("/register", handle.AUTH_JWTRegister)
+
+	// Startup the router
+	port := fmt.Sprintf(":%s", strconv.Itoa(s.Port))
+	s.Mux.Logger.Fatal(s.Mux.Start(port))
+}
+
+// TemplateRenderer is a custom html/template renderer for Echo framework
+type TemplateRenderer struct {
+	Templates *template.Template
+}
+
+// Render renders a template document
+func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
+
+	// Add global methods if data is a map
+	if viewContext, isMap := data.(map[string]interface{}); isMap {
+		viewContext["reverse"] = c.Echo().Reverse
+	}
+
+	return t.Templates.ExecuteTemplate(w, name, data)
 }

@@ -1,15 +1,26 @@
 package util
 
 import (
-    "path/filepath"
+	"os"
+	"path/filepath"
 )
 
-// Get absolute to provided path
-func GetAbsPath(path string) (string) {
-    abs, err := filepath.Abs(path)
-    if err != nil {
-        panic(err)
-    }
+// WorkingDirectoryPath returns the absolute path to the provided path
+func WorkingDirectoryPath(p string) string {
+	dir, err := os.Getwd()
+	if err != nil {
+		return ""
+	}
 
-    return abs
+	return filepath.Join(dir, p)
+}
+
+// GetAbsPath returns the absolute path to the provided path
+func GetAbsPath(path string) string {
+	abs, err := filepath.Abs(path)
+	if err != nil {
+		panic(err)
+	}
+
+	return abs
 }

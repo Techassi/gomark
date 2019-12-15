@@ -1,72 +1,52 @@
 package handlers
 
 import (
-    "strings"
+	"fmt"
+	"net/http"
 
-    "github.com/Techassi/gomark/internal/models"
-    "github.com/Techassi/gomark/internal/server/status"
+	m "github.com/Techassi/gomark/internal/models"
+	"github.com/Techassi/gomark/internal/server/status"
 
-    "github.com/gin-contrib/sessions"
-    "github.com/gin-gonic/gin"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/labstack/echo/v4"
 )
 
-func AUTH_Login(c *gin.Context) {
-    session := sessions.Default(c)
-	username := c.PostForm("username")
-	password := c.PostForm("password")
-
-	// Validate form input
-	if strings.Trim(username, " ") == "" || strings.Trim(password, " ") == "" {
-		status.InvalidParameters(c)
-		return
-	}
-
-	// Check for username and password match
-	if !AUTH_CheckCredentials(username, password) {
-		status.InvalidCredentials(c)
-		return
-	}
-
-	// Save the username in the session
-	session.Set("test", username) // In real world usage you'd set this to the users ID
-	if err := session.Save(); err != nil {
-		status.FailedToSaveSession(c)
-		return
-	}
-
-	status.LoggedIn(c)
+// AUTH_JWTError handles the redirect to the login page if no JWT token is
+// present
+func AUTH_JWTError(e error, c echo.Context) error {
+	return c.Redirect(http.StatusMovedPermanently, "/login")
 }
 
-func AUTH_Logout(c *gin.Context) {
-    return
+// AUTH_JWTRegister handles the regsiter process of a new user
+func AUTH_JWTRegister(c echo.Context) error {
+	return c.Redirect(http.StatusMovedPermanently, "/login")
 }
 
-func AUTH_Register(c *gin.Context) {
-    new := models.User{
-        Username:  c.PostForm("username"),
-        Password:  c.PostForm("password"),
-        Email:     c.PostForm("email"),
-        Firstname: c.PostForm("firstname"),
-        Lastname:  c.PostForm("lastname"),
-    }
+// AUTH_JWTLogin handles the user authentication via the DB to login the user
+func AUTH_JWTLogin(c echo.Context) error {
+	app := c.Get("app").(*m.App)
+	u := m.User{
+		Username: c.FormValue("username"),
+		Password: c.FormValue("password"),
+	}
 
-    if err := models.CreateUser(new); err != "" {
-        switch err {
-            case "USERNAME_INVALID":
-                status.UsernameInvalid(c)
-                return
-            case "EMAIL_INVALID":
-                status.EMailInvalid(c)
-                return
-        }
+	valid := app.DB.ValidCredentials(u)
+	if !valid {
+		status.AUTH_InvalidCredentials(c)
+		return nil
+	}
 
-        status.AccountNotCreated(c)
-        return
-    }
+	fmt.Println(valid)
 
-    status.AccountCreated(c)
+	token := jwt.New(jwt.SigningMethodHS256)
+
+	claims := token.Claims.(jwt.MapClaims)
+	claims["username"] = "Joe"
+
+	return nil
 }
 
-func AUTH_CheckCredentials(username, password string) (bool) {
-    return models.CheckIfValidCredentials(username, password)
+// AUTH_JWTLogout handles the logout process of the user
+func AUTH_JWTLogout(c echo.Context) error {
+	return c.Redirect(http.StatusMovedPermanently, "/login")
 }

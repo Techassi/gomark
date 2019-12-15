@@ -1,2 +1,3 @@
 *.exe
 public/js/node_modules/*
+config-custom.json

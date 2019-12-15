@@ -1,30 +1,43 @@
 package handlers
 
 import (
-    "net/http"
-    "github.com/gin-gonic/gin"
+	"net/http"
+
+	"github.com/labstack/echo/v4"
 )
 
-func API_GetRecentBookmarks(c *gin.Context) {
-    c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "bookmarks": ""})
+func API_GetRecentBookmarks(c echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"status": http.StatusOK,
+	})
 }
 
-func API_GetBookmarks(c *gin.Context) {
-    c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "bookmarks": ""})
+func API_GetBookmarks(c echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"status": http.StatusOK,
+	})
 }
 
-func API_GetBookmark(c *gin.Context) {
-    c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "bookmarks": ""})
+func API_GetBookmark(c echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"status": http.StatusOK,
+	})
 }
 
-func API_GetBookmarkTags(c *gin.Context) {
-    c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "tags": ""})
+func API_GetBookmarkTags(c echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"status": http.StatusOK,
+	})
 }
 
-func API_PostBookmark(c *gin.Context) {
-    c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "action": ""})
+func API_PostBookmark(c echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"status": http.StatusOK,
+	})
 }
 
-func API_PostBookmarkTags(c *gin.Context) {
-    c.JSON(http.StatusOK, gin.H{"status": http.StatusOK, "action": ""})
+func API_PostBookmarkTags(c echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"status": http.StatusOK,
+	})
 }
