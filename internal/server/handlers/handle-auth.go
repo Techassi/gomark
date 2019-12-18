@@ -124,6 +124,8 @@ func AUTH_JWT2FACode(c echo.Context) error {
 	// Check TempTwoFAToken if valid (exists and not expired)
 	key := app.DB.CheckTempTwoFAToken(tempToken.Value)
 
+	// TODO: Delete TempTwoFAToken after successfully using it
+
 	// Set up OTPConfig
 	otpc := &dgoogauth.OTPConfig{
 		Secret:      key,
