@@ -22,6 +22,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var configPath string
+
 // serveCmd represents the serve command
 var serveCmd = &cobra.Command{
 	Use:   "serve",
@@ -33,7 +35,7 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		a := app.New("config.json")
+		a := app.New(configPath)
 		s := server.New(a)
 		s.Run()
 	},
@@ -46,7 +48,8 @@ func init() {
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// serveCmd.PersistentFlags().String("foo", "", "A help for foo")
+	serveCmd.PersistentFlags().StringVar(&configPath, "config", "", "Path to your config file")
+	cobra.MarkFlagRequired(serveCmd.PersistentFlags(), "config")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:

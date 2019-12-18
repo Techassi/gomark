@@ -63,9 +63,11 @@ func (s *Server) Init(app *m.App) {
 func (s *Server) Run() {
 	// Static routes
 	s.Mux.Static("/static", util.GetAbsPath("public"))
+	s.Mux.Static("/2fa", util.GetAbsPath("public/2fa"))
 
 	// Unprotected routes
 	s.Mux.GET("/login", handle.UI_LoginPage)
+	s.Mux.GET("/code", handle.UI_TwoFACodePage)
 	s.Mux.GET("/register", handle.UI_RegisterPage)
 	s.Mux.GET("/s/:hash", handle.UI_SharedBookmarkPage)
 
@@ -82,8 +84,8 @@ func (s *Server) Run() {
 	// Protected routes
 	pr := s.Mux.Group("")
 	pr.Use(middleware.JWTWithConfig(middleware.JWTConfig{
-		SigningKey:              []byte("secret"),
-		TokenLookup:             "cookie:token",
+		SigningKey:              []byte(s.App.Config.Security.Jwt.Secret),
+		TokenLookup:             "cookie:Authorization",
 		ErrorHandlerWithContext: handle.AUTH_JWTError,
 	}))
 

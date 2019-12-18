@@ -23,6 +23,9 @@ type Config struct {
 		Jwt struct {
 			Secret string `json:"secret"`
 		} `json:"jwt"`
+		TwoFA struct {
+			Secret string `json:"secret"`
+		} `json:"2fa"`
 	} `json:"security"`
 }
 
