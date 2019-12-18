@@ -12,6 +12,10 @@ func UI_LoginPage(c echo.Context) error {
 	return c.Render(http.StatusOK, "login.html", map[string]interface{}{})
 }
 
+func UI_TwoFACodePage(c echo.Context) error {
+	return c.Render(http.StatusOK, "code.html", map[string]interface{}{})
+}
+
 func UI_RegisterPage(c echo.Context) error {
 	return c.Render(http.StatusOK, "register.html", map[string]interface{}{})
 }

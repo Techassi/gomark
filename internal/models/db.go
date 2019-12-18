@@ -47,12 +47,34 @@ func (d *DB) ValidCredentials(u *User) bool {
 	return !r
 }
 
-func (d *DB) SetTempTwoFAToken(u *User, t string, currTime *time.Time) error {
+// SetTempTwoFAToken sets a temp 2FA token and its expiration timestamp
+func (d *DB) SetTempTwoFAToken(u *User, t string, currTime time.Time) error {
 	var user User
 
 	d.Conn.Where("username = ? AND password = ?", u.Username, u.Password).First(&user)
 	user.TempTwoFAToken = t
-	user.TempTwoFATokenDate = currTime
+	user.TempTwoFATokenDate = &currTime
 
-	db.Conn.Save(&user)
+	d.Conn.Save(&user)
+	return nil
+}
+
+// CheckTempTwoFAToken checks the temp 2FA token and its expiration timestamp
+// TODO: Check expiration timestamp
+func (d *DB) CheckTempTwoFAToken(t string) string {
+	var user User
+
+	d.Conn.Where("temp_two_fa_token = ? AND temp_two_fa_token_date > ?", t, time.Now()).First(&user)
+
+	return user.TwoFAKey
+}
+
+func (d *DB) Update2FA(u *User, key string) {
+	var user User
+
+	d.Conn.Where("username = ? AND password = ?", u.Username, u.Password).First(&user)
+	user.TwoFA = true
+	user.TwoFAKey = key
+
+	d.Conn.Save(&user)
 }

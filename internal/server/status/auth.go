@@ -59,3 +59,30 @@ func AUTH_2FAQRCodeError(c echo.Context) error {
 		"message": "The 2FA QR code could not be generated.",
 	})
 }
+
+func AUTH_2FATempTokenCreateError(c echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"status":  http.StatusInternalServerError,
+		"scope":   "auth",
+		"error":   "2fa_temp_token_creation_error",
+		"message": "The 2FA temp token could not be created.",
+	})
+}
+
+func AUTH_2FATempTokenError(c echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"status":  http.StatusUnauthorized,
+		"scope":   "auth",
+		"error":   "2fa_temp_token_error",
+		"message": "The 2FA temp token is not set.",
+	})
+}
+
+func AUTH_2FAAuthenticationError(c echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"status":  http.StatusUnauthorized,
+		"scope":   "auth",
+		"error":   "2fa_authentication_error",
+		"message": "The 2FA code is invalid.",
+	})
+}

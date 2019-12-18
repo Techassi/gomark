@@ -4,14 +4,16 @@ import (
 	"crypto/rand"
 	"encoding/base32"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
+	"path/filepath"
 	"time"
 
 	"github.com/Techassi/gomark/internal/constants"
 	m "github.com/Techassi/gomark/internal/models"
 	"github.com/Techassi/gomark/internal/server/status"
-	"github.com/Techassi/gomark/internal/utils"
+	"github.com/Techassi/gomark/internal/util"
 
 	"github.com/dgrijalva/jwt-go"
 	dgoogauth "github.com/dgryski/dgoogauth"
@@ -50,8 +52,6 @@ func AUTH_JWTLogin(c echo.Context) error {
 		return status.AUTH_InvalidCredentials(c)
 	}
 
-	fmt.Println(u)
-
 	// Create 2FA Code if user isn't using 2FA already
 	if !u.TwoFA {
 		// Create 2FA secret
@@ -79,30 +79,27 @@ func AUTH_JWTLogin(c echo.Context) error {
 		// Generate QR Code for Google Authenticator
 		qrErr := qrcode.WriteFile(uri.String(), qrcode.Medium, 256, filepath.Join(util.GetAbsPath("public/2fa"), "qr.png"))
 		if qrErr != nil {
+			log.Fatal(qrErr)
 			return status.AUTH_2FAQRCodeError(c)
 		}
 
-		// Set that the user is now using 2FA
-		app.DB.Update2FA(&u)
+		// Set that the user is now using 2FA and save the key
+		app.DB.Update2FA(&u, twoFASecretBase32)
 	}
 
 	// Set temporary token to validate the user can access the 2FA code page
 	currTime := time.Now().Add(time.Minute * 5)
 
-	tempTwoFAToken := make([]byte, 10)
-	_, tempTwoFATokenErr := rand.Read(twoFASecret)
-	if tempTwoFATokenErr != nil {
-		return status.AUTH_2FATempTokenCreateError(c)
-	}
+	tempTwoFAToken := util.RandomString(10)
 
 	tokenCookie := new(http.Cookie)
 	tokenCookie.Name = "TempTwoFAToken"
 	tokenCookie.Path = "/"
-	tokenCookie.Value = tempTwoFAToken.(String)
+	tokenCookie.Value = string(tempTwoFAToken)
 	tokenCookie.Expires = currTime
 	c.SetCookie(tokenCookie)
 
-	app.DB.SetTempTwoFAToken(&u, tempTwoFAToken.(String), currTime)
+	app.DB.SetTempTwoFAToken(&u, string(tempTwoFAToken), currTime)
 
 	return c.Redirect(http.StatusMovedPermanently, "/code")
 }
@@ -119,18 +116,25 @@ func AUTH_JWT2FACode(c echo.Context) error {
 
 	// Check if the TempTwoFAToken cookie is set to validate if the user can
 	// access this page
-	_, err = c.Cookie("TempTwoFAToken")
-	if err != nil {
+	tempToken, tempTokenErr := c.Cookie("TempTwoFAToken")
+	if tempTokenErr != nil {
 		return status.AUTH_2FATempTokenError(c)
 	}
 
 	// Check TempTwoFAToken if valid (exists and not expired)
-	app.DB.CheckTempTwoFAToken()
+	key := app.DB.CheckTempTwoFAToken(tempToken.Value)
+
+	// Set up OTPConfig
+	otpc := &dgoogauth.OTPConfig{
+		Secret:      key,
+		WindowSize:  3,
+		HotpCounter: 0,
+	}
 
 	// Check 2FA code provided by user (input)
 	code := c.FormValue("twofacode")
 	valid, err := otpc.Authenticate(code)
-	if err != nil && !valid {
+	if err != nil || !valid {
 		return status.AUTH_2FAAuthenticationError(c)
 	}
 
@@ -142,7 +146,7 @@ func AUTH_JWT2FACode(c echo.Context) error {
 
 	// Set claims
 	claims := token.Claims.(jwt.MapClaims)
-	claims["username"] = u.Username
+	claims["username"] = "joe" // TODO: set this from the database
 	claims["exp"] = currTimeUnix
 
 	// Sign token

@@ -113,6 +113,7 @@ func (s *Server) Run() {
 	// Auth routes
 	auth := s.Mux.Group("/auth")
 	auth.POST("/login", handle.AUTH_JWTLogin)
+	auth.POST("/code", handle.AUTH_JWT2FACode)
 	auth.POST("/logout", handle.AUTH_JWTLogout)
 	auth.POST("/register", handle.AUTH_JWTRegister)
 

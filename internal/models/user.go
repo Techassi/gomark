@@ -11,6 +11,7 @@ type User struct {
 	Username           string     `json:"username"`
 	Password           string     `json:"password"`
 	TwoFA              bool       `json:"-"`
+	TwoFAKey           string     `json:"-"`
 	TempTwoFAToken     string     `json:"-"`
 	TempTwoFATokenDate *time.Time `json:"-"`
 }
