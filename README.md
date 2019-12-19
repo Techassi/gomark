@@ -15,3 +15,4 @@ Web-based bookmark manager written in GO
 -   Management of Bookmarks, Notes and Folders
 -   User Management
 -   Sharing of Bookmarks, Notes and Folders
+-   Use Argon2 for password hashing

@@ -88,8 +88,6 @@ func AUTH_JWTLogin(c echo.Context) error {
 		return status.AUTH_2FATempTokenCreateError(c)
 	}
 
-	fmt.Println(tempTwoFAToken)
-
 	currTime := time.Now().Add(time.Minute * 5)
 
 	tokenCookie := new(http.Cookie)
