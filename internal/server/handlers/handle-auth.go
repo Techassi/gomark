@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"crypto/rand"
-	"encoding/base32"
 	"fmt"
 	"log"
 	"net/http"
@@ -55,13 +53,10 @@ func AUTH_JWTLogin(c echo.Context) error {
 	// Create 2FA Code if user isn't using 2FA already
 	if !u.TwoFA {
 		// Create 2FA secret
-		twoFASecret := make([]byte, 10)
-		_, twoFAErr := rand.Read(twoFASecret)
+		twoFASecretBase32, twoFAErr := util.RandomCryptoString(10)
 		if twoFAErr != nil {
 			return status.AUTH_2FASecretError(c)
 		}
-
-		twoFASecretBase32 := base32.StdEncoding.EncodeToString(twoFASecret)
 
 		// Create the OTP Uri
 		uri, uriErr := url.Parse("otpauth://totp")
@@ -88,9 +83,14 @@ func AUTH_JWTLogin(c echo.Context) error {
 	}
 
 	// Set temporary token to validate the user can access the 2FA code page
-	currTime := time.Now().Add(time.Minute * 5)
+	tempTwoFAToken, tempTwoFATokenErr := util.RandomCryptoString(10)
+	if tempTwoFATokenErr != nil {
+		return status.AUTH_2FATempTokenCreateError(c)
+	}
 
-	tempTwoFAToken := util.RandomString(10)
+	fmt.Println(tempTwoFAToken)
+
+	currTime := time.Now().Add(time.Minute * 5)
 
 	tokenCookie := new(http.Cookie)
 	tokenCookie.Name = "TempTwoFAToken"

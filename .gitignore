@@ -1,4 +1,4 @@
 *.exe
 public/js/node_modules/*
 config-custom.json
-qr.png
+public/2fa/*
