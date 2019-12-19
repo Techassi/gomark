@@ -26,13 +26,51 @@ func AUTH_JWTError(e error, c echo.Context) error {
 }
 
 // AUTH_JWTRegister handles the regsiter process of a new user
-func AUTH_JWTRegister(c echo.Context) error {
+func AUTH_Register(c echo.Context) error {
 	return c.Redirect(http.StatusMovedPermanently, "/login")
+}
+
+// AUTH_Login handles the user authentication via the DB to login the user
+func AUTH_Login(c echo.Context) error {
+	// Check if cookie is already set
+	_, err := c.Cookie("Authorization")
+	if err == nil {
+		user := c.Get("user")
+		if user == nil {
+			return status.AUTH_InvalidCredentials(c)
+		}
+
+		return status.AUTH_AlreadySignedIn(c)
+	}
+
+	// Get the app and extract the provided user information
+	app := c.Get("app").(*m.App)
+	u := m.User{
+		Username: c.FormValue("username"),
+		Password: c.FormValue("password"),
+	}
+
+	// Check if the provided credentials are valid
+	valid := app.DB.ValidCredentials(&u)
+	if !valid {
+		return status.AUTH_InvalidCredentials(c)
+	}
+
+	// Check if the user has 2FA activated, if yes proceed to 2FA code authentication.
+	// If not continue with JWT authentication
+	if u.TwoFA {
+		// Setup 2FA and first time 2FA flow
+		// Redirect to 2FA route
+		// Use TwoFALoginFlow to handle the 2FA login flow
+	}
+
+	// Continue with the JWT login flow
+	return JWTLoginFlow(c, u, app)
 }
 
 // AUTH_JWTLogin handles the user authentication via the DB to login the user
 func AUTH_JWTLogin(c echo.Context) error {
-	// check if cookie is already set
+	// Check if cookie is already set
 	_, err := c.Cookie("Authorization")
 	if err == nil {
 		return status.AUTH_AlreadySignedIn(c)
@@ -169,4 +207,40 @@ func AUTH_JWT2FACode(c echo.Context) error {
 // AUTH_JWTLogout handles the logout process of the user
 func AUTH_JWTLogout(c echo.Context) error {
 	return c.Redirect(http.StatusMovedPermanently, "/login")
+}
+
+// TwoFALoginFlow handles the optional 2FA Login flow
+func TwoFALoginFlow() {
+
+}
+
+// JWTLoginFlow handles the JWT login flow
+func JWTLoginFlow(c echo.Context, u m.User, app *m.App) error {
+	// Create a new JWT token and get the current time + 24 hours to set the
+	// expiration time
+	// TODO: Make the expiration duration user configurable
+	token := jwt.New(jwt.SigningMethodHS256)
+	expTime := time.Now().Add(time.Hour * 24)
+	expTimeUnix := expTime.Unix()
+
+	// Set claims for the created token
+	claims := token.Claims.(jwt.MapClaims)
+	claims["username"] = u.Username // TODO: set this from the database
+	claims["exp"] = expTimeUnix
+
+	// Sign token
+	t, err := token.SignedString([]byte(app.Config.Security.Jwt.Secret))
+	if err != nil {
+		return status.AUTH_JWTTokenSigningError(c, err)
+	}
+
+	// Set response cookie with token
+	tokenCookie := new(http.Cookie)
+	tokenCookie.Name = "Authorization"
+	tokenCookie.Path = "/"
+	tokenCookie.Value = t
+	tokenCookie.Expires = expTime
+	c.SetCookie(tokenCookie)
+
+	return status.AUTH_SuccessfullySignedIn(c)
 }

@@ -30,3 +30,13 @@ func RandomCryptoString(n int) (string, error) {
 
 	return base32.StdEncoding.EncodeToString(s), nil
 }
+
+func RandomByteSlice(n uint32) ([]byte, error) {
+	s := make([]byte, n)
+	_, err := crand.Read(s)
+	if err != nil {
+		return nil, err
+	}
+
+	return s, nil
+}

@@ -15,7 +15,7 @@ require (
 	github.com/skip2/go-qrcode v0.0.0-20191027152451-9434209cb086
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.3.2
-	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550 // indirect
+	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 	gopkg.in/go-playground/validator.v9 v9.30.0 // indirect
 )
 

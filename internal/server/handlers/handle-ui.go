@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 )
 
@@ -57,7 +58,13 @@ func UI_NotesPage(c echo.Context) error {
 // Dashboard pages
 
 func UI_DashboardPage(c echo.Context) error {
-	return c.Render(http.StatusOK, "dashboard.html", map[string]interface{}{})
+	user := c.Get("user")
+	token := user.(*jwt.Token)
+
+	claims := token.Claims.(jwt.MapClaims)
+
+	return c.String(http.StatusOK, claims["name"].(string))
+	// return c.Render(http.StatusOK, "dashboard.html", map[string]interface{}{})
 }
 
 // Shared pages

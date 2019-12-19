@@ -112,10 +112,10 @@ func (s *Server) Run() {
 
 	// Auth routes
 	auth := s.Mux.Group("/auth")
-	auth.POST("/login", handle.AUTH_JWTLogin)
+	auth.POST("/login", handle.AUTH_Login)
 	auth.POST("/code", handle.AUTH_JWT2FACode)
 	auth.POST("/logout", handle.AUTH_JWTLogout)
-	auth.POST("/register", handle.AUTH_JWTRegister)
+	auth.POST("/register", handle.AUTH_Register)
 
 	// Startup the router
 	port := fmt.Sprintf(":%s", strconv.Itoa(s.Port))
