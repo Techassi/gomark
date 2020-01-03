@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Techassi/gomark/internal/util"
+
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
@@ -12,6 +14,10 @@ import (
 type DB struct {
 	Conn *gorm.DB
 }
+
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////// GENERAL FUNCTIONS //////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 // Init sets up the Database connection. This function will panic if the connection
 // isn't possible.
@@ -24,6 +30,7 @@ func (d *DB) Init(c *Config) {
 	db.AutoMigrate(
 		&Entity{},
 		&User{},
+		&Settings{},
 	)
 
 	d.Conn = db
@@ -34,26 +41,64 @@ func Connection(c *Config) string {
 	return fmt.Sprintf("%s:%s@(%s)/%s?charset=utf8&parseTime=True&loc=Local", c.DB.User, c.DB.Password, c.DB.Host, c.DB.Database)
 }
 
-func (d *DB) ValidCredentials(u *User) bool {
-	var user User
+////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////// AUTH FUNCTIONS ////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
+func (d *DB) ValidateCredentials(username, inputPass string) (bool, User) {
+	user := User{}
+
+	// Check if the 'User' table exists
 	if !d.Conn.HasTable(&user) {
-		return false
+		return false, User{}
 	}
 
-	r := d.Conn.Where("username = ? AND password = ?", u.Username, u.Password).First(&user).RecordNotFound()
-	u.TwoFA = user.TwoFA
+	// Check if the user exists via the username
+	r := d.Conn.Where("username = ?", username).First(&user).RecordNotFound()
+	if r {
+		return false, User{}
+	}
 
-	return !r
+	// Compare the provided and saved password
+	_, err := util.ComparePassword(inputPass, user.Password)
+	if err != nil {
+		return false, User{}
+	}
+
+	return true, user
 }
 
+func (d *DB) ValidateNewCredentials(u, p string) bool {
+	return true
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////// REGISTER FUNCTIONS //////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+func (d *DB) Register(user, pass, last, first, mail string) {
+	hashedPass, _ := util.HashPassword(pass)
+
+	d.Conn.Create(&User{
+		Username:  user,
+		Password:  hashedPass,
+		Lastname:  last,
+		Firstname: first,
+		EMail:     mail,
+	})
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////// 2FA FUNCTIONS /////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
 // SetTempTwoFAToken sets a temp 2FA token and its expiration timestamp
-func (d *DB) SetTempTwoFAToken(u *User, t string, currTime time.Time) error {
+func (d *DB) SetTemp2FAToken(u *User, t string, expirationTime time.Time) error {
 	var user User
 
 	d.Conn.Where("username = ? AND password = ?", u.Username, u.Password).First(&user)
 	user.TempTwoFAToken = t
-	user.TempTwoFATokenDate = &currTime
+	user.TempTwoFATokenDate = &expirationTime
 
 	d.Conn.Save(&user)
 	return nil
@@ -61,12 +106,12 @@ func (d *DB) SetTempTwoFAToken(u *User, t string, currTime time.Time) error {
 
 // CheckTempTwoFAToken checks the temp 2FA token and its expiration timestamp
 // TODO: Check expiration timestamp
-func (d *DB) CheckTempTwoFAToken(t string) string {
+func (d *DB) CheckTemp2FAToken(t string) *User {
 	var user User
 
 	d.Conn.Where("temp_two_fa_token = ? AND temp_two_fa_token_date > ?", t, time.Now()).First(&user)
 
-	return user.TwoFAKey
+	return &user
 }
 
 func (d *DB) Update2FA(u *User, key string) {
@@ -77,4 +122,29 @@ func (d *DB) Update2FA(u *User, key string) {
 	user.TwoFAKey = key
 
 	d.Conn.Save(&user)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////// SETTINGS FUNCTIONS //////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+func (d *DB) DefaultSettings() Settings {
+	if settings := d.LoadSettings(); settings.ID != 0 {
+		return settings
+	}
+
+	s := Settings{
+		RegisterEnabled: true,
+		SharingEnabled:  false,
+	}
+	d.Conn.Create(&s)
+
+	return s
+}
+
+func (d *DB) LoadSettings() Settings {
+	s := Settings{}
+	d.Conn.Order("created_at DESC").First(&s)
+
+	return s
 }

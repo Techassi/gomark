@@ -3,6 +3,8 @@ package handlers
 import (
 	"net/http"
 
+	m "github.com/Techassi/gomark/internal/models"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 )
@@ -13,11 +15,17 @@ func UI_LoginPage(c echo.Context) error {
 	return c.Render(http.StatusOK, "login.html", map[string]interface{}{})
 }
 
-func UI_TwoFACodePage(c echo.Context) error {
+func UI_2FACodePage(c echo.Context) error {
 	return c.Render(http.StatusOK, "code.html", map[string]interface{}{})
 }
 
 func UI_RegisterPage(c echo.Context) error {
+	app := c.Get("app").(*m.App)
+
+	if !app.RegisterEnabled() {
+		return c.Redirect(http.StatusMovedPermanently, "/login")
+	}
+
 	return c.Render(http.StatusOK, "register.html", map[string]interface{}{})
 }
 
@@ -59,11 +67,14 @@ func UI_NotesPage(c echo.Context) error {
 
 func UI_DashboardPage(c echo.Context) error {
 	user := c.Get("user")
-	token := user.(*jwt.Token)
+	if user == nil {
+		return c.Redirect(http.StatusMovedPermanently, "/login")
+	}
 
+	token := user.(*jwt.Token)
 	claims := token.Claims.(jwt.MapClaims)
 
-	return c.String(http.StatusOK, claims["name"].(string))
+	return c.String(http.StatusOK, claims["username"].(string))
 	// return c.Render(http.StatusOK, "dashboard.html", map[string]interface{}{})
 }
 

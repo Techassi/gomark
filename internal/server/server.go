@@ -67,7 +67,7 @@ func (s *Server) Run() {
 
 	// Unprotected routes
 	s.Mux.GET("/login", handle.UI_LoginPage)
-	s.Mux.GET("/code", handle.UI_TwoFACodePage)
+	s.Mux.GET("/code", handle.UI_2FACodePage)
 	s.Mux.GET("/register", handle.UI_RegisterPage)
 	s.Mux.GET("/s/:hash", handle.UI_SharedBookmarkPage)
 
@@ -82,20 +82,20 @@ func (s *Server) Run() {
 	})
 
 	// Protected routes
-	pr := s.Mux.Group("")
+	pr := s.Mux.Group("/")
 	pr.Use(middleware.JWTWithConfig(middleware.JWTConfig{
 		SigningKey:              []byte(s.App.Config.Security.Jwt.Secret),
 		TokenLookup:             "cookie:Authorization",
 		ErrorHandlerWithContext: handle.AUTH_JWTError,
 	}))
 
-	pr.GET("/", handle.UI_DashboardPage)
-	pr.GET("/notes", handle.UI_NotesPage)
-	pr.GET("/shared", handle.UI_SharedPage)
-	pr.GET("/recent", handle.UI_RecentBookmarksPage)
-	pr.GET("/bookmarks", handle.UI_BookmarksPage)
-	pr.GET("/b/:hash", handle.UI_BookmarkPage)
-	pr.GET("/n/:hash", handle.UI_NotePage)
+	pr.GET("", handle.UI_DashboardPage)
+	pr.GET("notes", handle.UI_NotesPage)
+	pr.GET("shared", handle.UI_SharedPage)
+	pr.GET("recent", handle.UI_RecentBookmarksPage)
+	pr.GET("bookmarks", handle.UI_BookmarksPage)
+	pr.GET("b/:hash", handle.UI_BookmarkPage)
+	pr.GET("n/:hash", handle.UI_NotePage)
 
 	// API routes
 	api := s.Mux.Group("/api")
@@ -113,8 +113,8 @@ func (s *Server) Run() {
 	// Auth routes
 	auth := s.Mux.Group("/auth")
 	auth.POST("/login", handle.AUTH_Login)
-	auth.POST("/code", handle.AUTH_JWT2FACode)
-	auth.POST("/logout", handle.AUTH_JWTLogout)
+	auth.POST("/code", handle.AUTH_2FACode)
+	// auth.POST("/logout", handle.AUTH_JWTLogout)
 	auth.POST("/register", handle.AUTH_Register)
 
 	// Startup the router

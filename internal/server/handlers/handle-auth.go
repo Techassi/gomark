@@ -1,22 +1,13 @@
 package handlers
 
 import (
-	"fmt"
-	"log"
 	"net/http"
-	"net/url"
-	"path/filepath"
-	"time"
 
-	"github.com/Techassi/gomark/internal/constants"
 	m "github.com/Techassi/gomark/internal/models"
 	"github.com/Techassi/gomark/internal/server/status"
-	"github.com/Techassi/gomark/internal/util"
 
-	"github.com/dgrijalva/jwt-go"
-	dgoogauth "github.com/dgryski/dgoogauth"
 	"github.com/labstack/echo/v4"
-	qrcode "github.com/skip2/go-qrcode"
+	// qrcode "github.com/skip2/go-qrcode"
 )
 
 // AUTH_JWTError handles the redirect to the login page if no JWT token is
@@ -25,222 +16,102 @@ func AUTH_JWTError(e error, c echo.Context) error {
 	return c.Redirect(http.StatusMovedPermanently, "/login")
 }
 
-// AUTH_JWTRegister handles the regsiter process of a new user
+// AUTH_JWTRegister handles the register process of a new user
 func AUTH_Register(c echo.Context) error {
-	return c.Redirect(http.StatusMovedPermanently, "/login")
+	// Initiate Authentication
+	auth := &m.Authentication{}
+	auth.Init("register", c)
+
+	if !auth.App.RegisterEnabled() {
+		return c.JSON(200, status.ADMIN_RegisterDisabled())
+	}
+
+	// Extract the provided user information to check for validity
+	username := c.FormValue("username")
+	password := c.FormValue("password")
+
+	email := c.FormValue("email")
+	lastname := c.FormValue("lastname")
+	firstname := c.FormValue("firstname")
+
+	// Check if username and password are valid (username is not used already
+	// and password checks all requirements)
+	if !auth.ValidateNewCredentials(username, password) {
+		return c.JSON(200, status.AUTH_InvalidNewCredentials())
+	}
+
+	// Register the new account
+	auth.Register(username, password, lastname, firstname, email)
+
+	return c.JSON(200, status.AUTH_SuccessfullyRegistered())
 }
 
 // AUTH_Login handles the user authentication via the DB to login the user
 func AUTH_Login(c echo.Context) error {
-	// Check if cookie is already set
-	_, err := c.Cookie("Authorization")
-	if err == nil {
-		user := c.Get("user")
-		if user == nil {
-			return status.AUTH_InvalidCredentials(c)
-		}
-
-		return status.AUTH_AlreadySignedIn(c)
+	// Initiate Authentication
+	auth := &m.Authentication{}
+	auth.Init("login", c)
+	if err := auth.CheckAuthorizationCookie(); err != nil {
+		return c.JSON(200, err)
 	}
 
-	// Get the app and extract the provided user information
-	app := c.Get("app").(*m.App)
-	u := m.User{
-		Username: c.FormValue("username"),
-		Password: c.FormValue("password"),
-	}
+	// Extract the provided user information
+	username := c.FormValue("username")
+	password := c.FormValue("password")
 
 	// Check if the provided credentials are valid
-	valid := app.DB.ValidCredentials(&u)
+	valid, user := auth.ValidateCredentials(username, password)
 	if !valid {
-		return status.AUTH_InvalidCredentials(c)
+		return c.JSON(200, status.AUTH_InvalidCredentials())
+		return nil
 	}
+
+	auth.SetUser(&user)
 
 	// Check if the user has 2FA activated, if yes proceed to 2FA code authentication.
 	// If not continue with JWT authentication
-	if u.TwoFA {
-		// Setup 2FA and first time 2FA flow
-		// Redirect to 2FA route
-		// Use TwoFALoginFlow to handle the 2FA login flow
+	if auth.Uses2FA() {
+		// Set temporary token to validate the user can access the 2FA code page
+		if err := auth.SetTemp2FAToken(); err != nil {
+			return c.JSON(200, err)
+		}
+
+		// Redirect to code page
+		return c.Redirect(http.StatusMovedPermanently, "/code")
 	}
 
 	// Continue with the JWT login flow
-	return JWTLoginFlow(c, u, app)
+	return JWTLoginFlow(auth)
 }
 
-// AUTH_JWTLogin handles the user authentication via the DB to login the user
-func AUTH_JWTLogin(c echo.Context) error {
-	// Check if cookie is already set
-	_, err := c.Cookie("Authorization")
-	if err == nil {
-		return status.AUTH_AlreadySignedIn(c)
+// AUTH_2FACode handles the 2FA code validation
+func AUTH_2FACode(c echo.Context) error {
+	// Initiate Authentication
+	auth := &m.Authentication{}
+	auth.Init("2fa", c)
+	err := auth.CheckAuthorizationCookie()
+	if err != nil {
+		return c.JSON(200, err)
 	}
 
-	app := c.Get("app").(*m.App)
-	u := m.User{
-		Username: c.FormValue("username"),
-		Password: c.FormValue("password"),
-	}
+	// Check Temp2FAToken if valid
+	auth.CheckTemp2FAToken()
 
-	// check if the provided credentials are valid
-	valid := app.DB.ValidCredentials(&u)
+	// Validate if the provided 2FA code is valid
+	valid := auth.Validate2FACode()
 	if !valid {
-		return status.AUTH_InvalidCredentials(c)
+		return c.JSON(200, status.AUTH_2FAAuthenticationError())
 	}
 
-	// Create 2FA Code if user isn't using 2FA already
-	if !u.TwoFA {
-		// Create 2FA secret
-		twoFASecretBase32, twoFAErr := util.RandomCryptoString(10)
-		if twoFAErr != nil {
-			return status.AUTH_2FASecretError(c)
-		}
-
-		// Create the OTP Uri
-		uri, uriErr := url.Parse("otpauth://totp")
-		if uriErr != nil {
-			return status.AUTH_2FAUriError(c)
-		}
-
-		uri.Path += fmt.Sprintf("/%s:%s", url.PathEscape(constants.TWOFA_ISSUER), u.Username)
-
-		params := url.Values{}
-		params.Add("secret", twoFASecretBase32)
-		params.Add("issuer", constants.TWOFA_ISSUER)
-		uri.RawQuery = params.Encode()
-
-		// Generate QR Code for Google Authenticator
-		qrErr := qrcode.WriteFile(uri.String(), qrcode.Medium, 256, filepath.Join(util.GetAbsPath("public/2fa"), "qr.png"))
-		if qrErr != nil {
-			log.Fatal(qrErr)
-			return status.AUTH_2FAQRCodeError(c)
-		}
-
-		// Set that the user is now using 2FA and save the key
-		app.DB.Update2FA(&u, twoFASecretBase32)
-	}
-
-	// Set temporary token to validate the user can access the 2FA code page
-	tempTwoFAToken, tempTwoFATokenErr := util.RandomCryptoString(10)
-	if tempTwoFATokenErr != nil {
-		return status.AUTH_2FATempTokenCreateError(c)
-	}
-
-	currTime := time.Now().Add(time.Minute * 5)
-
-	tokenCookie := new(http.Cookie)
-	tokenCookie.Name = "TempTwoFAToken"
-	tokenCookie.Path = "/"
-	tokenCookie.Value = string(tempTwoFAToken)
-	tokenCookie.Expires = currTime
-	c.SetCookie(tokenCookie)
-
-	app.DB.SetTempTwoFAToken(&u, string(tempTwoFAToken), currTime)
-
-	return c.Redirect(http.StatusMovedPermanently, "/code")
+	// Continue with the JWT login flow
+	return JWTLoginFlow(auth)
 }
 
-// AUTH_JWT2FACode handles the 2FA code authentication process of the user
-func AUTH_JWT2FACode(c echo.Context) error {
-	// Check if cookie is already set
-	_, err := c.Cookie("Authorization")
-	if err == nil {
-		return status.AUTH_AlreadySignedIn(c)
+func JWTLoginFlow(auth *m.Authentication) error {
+	// Set JWT token
+	if err := auth.SetJWTToken(); err != nil {
+		return auth.Context.JSON(200, err)
 	}
 
-	app := c.Get("app").(*m.App)
-
-	// Check if the TempTwoFAToken cookie is set to validate if the user can
-	// access this page
-	tempToken, tempTokenErr := c.Cookie("TempTwoFAToken")
-	if tempTokenErr != nil {
-		return status.AUTH_2FATempTokenError(c)
-	}
-
-	// Check TempTwoFAToken if valid (exists and not expired)
-	key := app.DB.CheckTempTwoFAToken(tempToken.Value)
-
-	// TODO: Delete TempTwoFAToken after successfully using it
-
-	// Set up OTPConfig
-	otpc := &dgoogauth.OTPConfig{
-		Secret:      key,
-		WindowSize:  3,
-		HotpCounter: 0,
-	}
-
-	// Check 2FA code provided by user (input)
-	code := c.FormValue("twofacode")
-	valid, err := otpc.Authenticate(code)
-	if err != nil || !valid {
-		return status.AUTH_2FAAuthenticationError(c)
-	}
-
-	// Create a new JWT token and get the current time + 24 hours to set the
-	// expiration time
-	token := jwt.New(jwt.SigningMethodHS256)
-	currTime := time.Now().Add(time.Hour * 24)
-	currTimeUnix := currTime.Unix()
-
-	// Set claims
-	claims := token.Claims.(jwt.MapClaims)
-	claims["username"] = "joe" // TODO: set this from the database
-	claims["exp"] = currTimeUnix
-
-	// Sign token
-	t, err := token.SignedString([]byte(app.Config.Security.Jwt.Secret))
-	if err != nil {
-		return err
-	}
-
-	// Set response cookie with token
-	tokenCookie := new(http.Cookie)
-	tokenCookie.Name = "Authorization"
-	tokenCookie.Path = "/"
-	tokenCookie.Value = t
-	tokenCookie.Expires = currTime
-	c.SetCookie(tokenCookie)
-
-	return status.AUTH_SuccessfullySignedIn(c)
-}
-
-// AUTH_JWTLogout handles the logout process of the user
-func AUTH_JWTLogout(c echo.Context) error {
-	return c.Redirect(http.StatusMovedPermanently, "/login")
-}
-
-// TwoFALoginFlow handles the optional 2FA Login flow
-func TwoFALoginFlow() {
-
-}
-
-// JWTLoginFlow handles the JWT login flow
-func JWTLoginFlow(c echo.Context, u m.User, app *m.App) error {
-	// Create a new JWT token and get the current time + 24 hours to set the
-	// expiration time
-	// TODO: Make the expiration duration user configurable
-	token := jwt.New(jwt.SigningMethodHS256)
-	expTime := time.Now().Add(time.Hour * 24)
-	expTimeUnix := expTime.Unix()
-
-	// Set claims for the created token
-	claims := token.Claims.(jwt.MapClaims)
-	claims["username"] = u.Username // TODO: set this from the database
-	claims["exp"] = expTimeUnix
-
-	// Sign token
-	t, err := token.SignedString([]byte(app.Config.Security.Jwt.Secret))
-	if err != nil {
-		return status.AUTH_JWTTokenSigningError(c, err)
-	}
-
-	// Set response cookie with token
-	tokenCookie := new(http.Cookie)
-	tokenCookie.Name = "Authorization"
-	tokenCookie.Path = "/"
-	tokenCookie.Value = t
-	tokenCookie.Expires = expTime
-	c.SetCookie(tokenCookie)
-
-	return status.AUTH_SuccessfullySignedIn(c)
+	return auth.Context.JSON(200, status.AUTH_SuccessfullySignedIn())
 }
