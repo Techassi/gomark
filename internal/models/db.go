@@ -15,12 +15,15 @@ type DB struct {
 	Conn *gorm.DB
 }
 
+type DBModel struct {
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////// GENERAL FUNCTIONS //////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// Init sets up the Database connection. This function will panic if the connection
-// isn't possible.
+// Init sets up the Database connection. This function will panic if the
+// connection isn't possible.
 func (d *DB) Init(c *Config) {
 	db, err := gorm.Open("mysql", Connection(c))
 	if err != nil {
@@ -31,6 +34,9 @@ func (d *DB) Init(c *Config) {
 		&Entity{},
 		&User{},
 		&Settings{},
+		&BookmarkData{},
+		&FolderData{},
+		&NoteData{},
 	)
 
 	d.Conn = db
@@ -147,4 +153,46 @@ func (d *DB) LoadSettings() Settings {
 	d.Conn.Order("created_at DESC").First(&s)
 
 	return s
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////// ENTITY FUNCTIONS ///////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+func (d *DB) SaveEntity(e Entity, id uint) {
+	u := User{}
+	d.Conn.First(&u, id)
+	d.Conn.Model(&u).Association("Entities").Append(e)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////// BOOKMARK FUNCTIONS //////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+func (d *DB) GetBookmarksByUserID(id uint) []Entity {
+	u := User{}
+	r := []Entity{}
+	d.Conn.First(&u, id)
+	d.Conn.Set("gorm:auto_preload", true).Model(&u).Where("type = ?", "bookmark").Association("Entities").Find(&r)
+	return r
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////// FOLDER FUNCTIONS ///////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+func (d *DB) GetFoldersByUserID(id uint) []Entity {
+	u := User{}
+	r := []Entity{}
+	d.Conn.First(&u, id)
+	d.Conn.Set("gorm:auto_preload", true).Model(&u).Where("type = ?", "folder").Association("Entities").Find(&r)
+	return r
+}
+
+func (d *DB) SaveEntityToFolder(e Entity, hash string) {
+	r := Entity{}
+	d.Conn.Set("gorm:auto_preload", true).Where("type = ? AND hash = ?", "folder", hash).First(&r)
+
+	r.FolderData.ChildEntities = append(r.FolderData.ChildEntities, e)
+	d.Conn.Save(&r)
 }

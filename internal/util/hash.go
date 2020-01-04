@@ -3,8 +3,10 @@ package util
 import (
 	"crypto/subtle"
 	"encoding/base64"
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"hash/adler32"
 	"runtime"
 	"strings"
 
@@ -12,6 +14,10 @@ import (
 
 	"golang.org/x/crypto/argon2"
 )
+
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////// ARGON2 FUNCTIONS ///////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 type Argon2Params struct {
 	Memory      uint32
@@ -105,4 +111,24 @@ func decodeHash(encodedHash string) (p *Argon2Params, salt, hash []byte, err err
 	p.KeyLength = uint32(len(hash))
 
 	return p, salt, hash, nil
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////// ENTITY FUNCTIONS ///////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+func EntityHash(name, url string) string {
+	h := adler32.New()
+	s := fmt.Sprintf("%s%s", name, url)
+
+	h.Write([]byte(s))
+	return hex.EncodeToString(h.Sum(nil))
+}
+
+func EntityHashPlusString(name string) string {
+	h := adler32.New()
+	s := fmt.Sprintf("%s%s", name, RandomString(10))
+
+	h.Write([]byte(s))
+	return hex.EncodeToString(h.Sum(nil))
 }

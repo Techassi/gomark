@@ -2,9 +2,10 @@ package models
 
 // App represents dependencies which will be injected into the Server handlers.
 type App struct {
-	Config   *Config
-	DB       *DB
-	Settings Settings
+	Config    *Config
+	DB        *DB
+	Scheduler *Scheduler
+	Settings  Settings
 }
 
 // Init sets up some basic parameters of the provided App instance, like the Config
@@ -15,6 +16,9 @@ func (a *App) Init(c string) {
 
 	a.DB = &DB{}
 	a.DB.Init(a.Config)
+
+	a.Scheduler = &Scheduler{}
+	a.Scheduler.Init(a.DB)
 
 	a.Settings = a.DB.DefaultSettings()
 }

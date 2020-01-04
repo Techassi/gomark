@@ -10,11 +10,19 @@ import (
 	// qrcode "github.com/skip2/go-qrcode"
 )
 
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////// GENERAL FUNCTIONS //////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
 // AUTH_JWTError handles the redirect to the login page if no JWT token is
 // present
 func AUTH_JWTError(e error, c echo.Context) error {
 	return c.Redirect(http.StatusMovedPermanently, "/login")
 }
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////// REGISTER FUNCTIONS //////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 // AUTH_JWTRegister handles the register process of a new user
 func AUTH_Register(c echo.Context) error {
@@ -45,6 +53,10 @@ func AUTH_Register(c echo.Context) error {
 
 	return c.JSON(200, status.AUTH_SuccessfullyRegistered())
 }
+
+////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////// LOGIN FUNCTIONS ///////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 // AUTH_Login handles the user authentication via the DB to login the user
 func AUTH_Login(c echo.Context) error {
@@ -84,6 +96,19 @@ func AUTH_Login(c echo.Context) error {
 	return JWTLoginFlow(auth)
 }
 
+func JWTLoginFlow(auth *m.Authentication) error {
+	// Set JWT token
+	if err := auth.SetJWTToken(); err != nil {
+		return auth.Context.JSON(200, err)
+	}
+
+	return auth.Context.JSON(200, status.AUTH_SuccessfullySignedIn())
+}
+
+////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////// 2FA FUNCTIONS ////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
 // AUTH_2FACode handles the 2FA code validation
 func AUTH_2FACode(c echo.Context) error {
 	// Initiate Authentication
@@ -105,13 +130,4 @@ func AUTH_2FACode(c echo.Context) error {
 
 	// Continue with the JWT login flow
 	return JWTLoginFlow(auth)
-}
-
-func JWTLoginFlow(auth *m.Authentication) error {
-	// Set JWT token
-	if err := auth.SetJWTToken(); err != nil {
-		return auth.Context.JSON(200, err)
-	}
-
-	return auth.Context.JSON(200, status.AUTH_SuccessfullySignedIn())
 }

@@ -154,6 +154,7 @@ func (a *Authentication) SetJWTToken() map[string]interface{} {
 	// Set JWT claims
 	claims := token.Claims.(jwt.MapClaims)
 	claims["username"] = a.User.Username
+	claims["userid"] = uint(a.User.ID)
 	claims["exp"] = expirationTimeUnix
 
 	// Sign the JWT token

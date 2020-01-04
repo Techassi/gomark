@@ -99,6 +99,11 @@ func (s *Server) Run() {
 
 	// API routes
 	api := s.Mux.Group("/api")
+	api.Use(middleware.JWTWithConfig(middleware.JWTConfig{
+		SigningKey:              []byte(s.App.Config.Security.Jwt.Secret),
+		TokenLookup:             "cookie:Authorization",
+		ErrorHandlerWithContext: handle.AUTH_JWTError,
+	}))
 
 	// v1 API routes
 	v1 := api.Group("/v1")
@@ -106,9 +111,13 @@ func (s *Server) Run() {
 	v1.GET("/bookmarks", handle.API_GetBookmarks)
 	v1.GET("/bookmarks/:hash", handle.API_GetBookmark)
 	v1.GET("/bookmarks/:hash/tags", handle.API_GetBookmarkTags)
+	v1.GET("/folders", handle.API_GetFolders)
 
-	v1.POST("/bookmarks", handle.API_PostBookmark)
-	v1.POST("/bookmarks/:hash/tags", handle.API_PostBookmarkTags)
+	v1.POST("/bookmark", handle.API_PostBookmark)
+	v1.POST("/bookmark/:hash", handle.API_UpdateBookmark)
+	v1.POST("/bookmark/:hash/tags", handle.API_PostBookmarkTags)
+	v1.POST("/folder", handle.API_PostFolder)
+	v1.POST("/folder/:hash", handle.API_PostEntityToFolder)
 
 	// Auth routes
 	auth := s.Mux.Group("/auth")
@@ -129,7 +138,6 @@ type TemplateRenderer struct {
 
 // Render renders a template document
 func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
-
 	// Add global methods if data is a map
 	if viewContext, isMap := data.(map[string]interface{}); isMap {
 		viewContext["reverse"] = c.Echo().Reverse

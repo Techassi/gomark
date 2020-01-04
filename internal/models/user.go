@@ -13,6 +13,7 @@ type User struct {
 	Firstname          string     `json:"firstname"`
 	Lastname           string     `json:"lastname"`
 	EMail              string     `json:"email"`
+	Entities           []Entity   `json:"-" gorm:"many2many:user_entities;"`
 	TwoFA              bool       `json:"-"`
 	TwoFAKey           string     `json:"-"`
 	TempTwoFAToken     string     `json:"-"`

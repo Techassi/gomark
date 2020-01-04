@@ -1,6 +1,6 @@
 # gomark
 
-Web-based bookmark manager written in GO
+Web-based bookmark manager written in GO. CURRENTLY IN DEVELOPMENT (NOT FEATURE-COMPLETE / PRODUCTION READY)
 
 ## Features
 
@@ -8,7 +8,8 @@ Web-based bookmark manager written in GO
 
 ## Current Development
 
--   Login flow working, now implementing UI
+-   API Routes and Data Structures
+-   Need to rethink Data Structure
 
 ## Planned Features
 
