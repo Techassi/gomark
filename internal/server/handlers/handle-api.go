@@ -31,11 +31,11 @@ func API_GetBookmarks(c echo.Context) error {
 
 	token := user.(*jwt.Token)
 	claims := token.Claims.(jwt.MapClaims)
+	userID := uint(claims["userid"].(float64))
 
-	b := app.DB.GetBookmarksByUserID(uint(claims["userid"].(float64)))
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"status":    http.StatusOK,
-		"bookmarks": b,
+		"bookmarks": app.DB.GetBookmarksByUserID(userID),
 	})
 }
 
@@ -66,22 +66,21 @@ func API_PostBookmark(c echo.Context) error {
 	bookmarkDesc := c.FormValue("bookmark-desc")
 	bookmarkUrl := c.FormValue("bookmark-url")
 	bookmarkHash := util.EntityHash(bookmarkName, bookmarkUrl)
+	bookmarkOwner := uint(claims["userid"].(float64))
 
-	b := m.Entity{
-		Type:      "bookmark",
-		Name:      bookmarkName,
-		Hash:      bookmarkHash,
-		Shared:    false,
-		ClickedOn: 0,
-		BookmarkData: &m.BookmarkData{
-			Description: bookmarkDesc,
-			URL:         bookmarkUrl,
-			ImageURL:    "",
-		},
+	b := m.Bookmark{
+		OwnerID:     bookmarkOwner,
+		Name:        bookmarkName,
+		Hash:        bookmarkHash,
+		Shared:      false,
+		Pinned:      false,
+		ClickedOn:   0,
+		Description: bookmarkDesc,
+		URL:         bookmarkUrl,
+		ImageURL:    "",
 	}
 
-	app.DB.SaveEntity(b, uint(claims["userid"].(float64)))
-
+	app.DB.SaveBookmark(b)
 	return c.JSON(http.StatusOK, status.API_GeneralSuccess())
 }
 
@@ -112,21 +111,50 @@ func API_PostFolder(c echo.Context) error {
 
 	folderName := c.FormValue("folder-name")
 	folderHash := util.EntityHashPlusString(folderName)
+	folderOwner := uint(claims["userid"].(float64))
 
-	f := m.Entity{
-		Type:      "folder",
-		Name:      folderName,
-		Hash:      folderHash,
-		Shared:    false,
-		ClickedOn: 0,
-		FolderData: &m.FolderData{
-			ChildEntitiesCount: 0,
-			ChildEntities:      []m.Entity{},
-		},
+	f := m.Folder{
+		OwnerID:       folderOwner,
+		Name:          folderName,
+		Hash:          folderHash,
+		Shared:        false,
+		ClickedOn:     0,
+		ChildrenCount: 0,
+		HasParent:     false,
 	}
 
-	app.DB.SaveEntity(f, uint(claims["userid"].(float64)))
+	app.DB.SaveFolder(f)
+	return c.JSON(http.StatusOK, status.API_GeneralSuccess())
+}
 
+func API_PostSubFolder(c echo.Context) error {
+	app := c.Get("app").(*m.App)
+
+	user := c.Get("user")
+	if user == nil {
+		return c.JSON(http.StatusOK, status.API_GeneralAccesError())
+	}
+
+	token := user.(*jwt.Token)
+	claims := token.Claims.(jwt.MapClaims)
+
+	folderName := c.FormValue("folder-name")
+	folderHash := util.EntityHashPlusString(folderName)
+	folderOwner := uint(claims["userid"].(float64))
+
+	f := m.Folder{
+		OwnerID:       folderOwner,
+		Name:          folderName,
+		Hash:          folderHash,
+		Shared:        false,
+		ClickedOn:     0,
+		ChildrenCount: 0,
+		HasParent:     true,
+	}
+
+	if err := app.DB.SaveSubFolder(c.Param("hash"), f); err != nil {
+		return c.JSON(http.StatusOK, status.API_GeneralAccesError())
+	}
 	return c.JSON(http.StatusOK, status.API_GeneralSuccess())
 }
 
@@ -140,41 +168,10 @@ func API_GetFolders(c echo.Context) error {
 
 	token := user.(*jwt.Token)
 	claims := token.Claims.(jwt.MapClaims)
+	userID := uint(claims["userid"].(float64))
 
-	f := app.DB.GetFoldersByUserID(uint(claims["userid"].(float64)))
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"status":  http.StatusOK,
-		"folders": f,
+		"folders": app.DB.GetFolders(userID),
 	})
-}
-
-func API_PostEntityToFolder(c echo.Context) error {
-	app := c.Get("app").(*m.App)
-
-	user := c.Get("user")
-	if user == nil {
-		return c.JSON(http.StatusOK, status.API_GeneralAccesError())
-	}
-
-	bookmarkName := c.FormValue("bookmark-name")
-	bookmarkDesc := c.FormValue("bookmark-desc")
-	bookmarkUrl := c.FormValue("bookmark-url")
-	bookmarkHash := util.EntityHash(bookmarkName, bookmarkUrl)
-
-	e := m.Entity{
-		Type:      "bookmark",
-		Name:      bookmarkName,
-		Hash:      bookmarkHash,
-		Shared:    false,
-		ClickedOn: 0,
-		BookmarkData: &m.BookmarkData{
-			Description: bookmarkDesc,
-			URL:         bookmarkUrl,
-			ImageURL:    "",
-		},
-	}
-
-	app.DB.SaveEntityToFolder(e, c.Param("hash"))
-
-	return c.JSON(http.StatusOK, status.API_GeneralSuccess())
 }

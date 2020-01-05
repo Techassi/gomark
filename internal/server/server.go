@@ -117,7 +117,7 @@ func (s *Server) Run() {
 	v1.POST("/bookmark/:hash", handle.API_UpdateBookmark)
 	v1.POST("/bookmark/:hash/tags", handle.API_PostBookmarkTags)
 	v1.POST("/folder", handle.API_PostFolder)
-	v1.POST("/folder/:hash", handle.API_PostEntityToFolder)
+	v1.POST("/folder/:hash", handle.API_PostSubFolder)
 
 	// Auth routes
 	auth := s.Mux.Group("/auth")

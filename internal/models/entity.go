@@ -4,43 +4,48 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-type Entity struct {
-	gorm.Model   `json:"-"`
-	EntityID     uint          `json:"-"`
-	Type         string        `json:"type"`
-	Hash         string        `json:"hash"`
-	Name         string        `json:"name"`
-	Shared       bool          `json:"shared"`
-	ClickedOn    uint          `json:"clicked_on"`
-	FolderData   *FolderData   `json:"folder_data,omitempty"`
-	NoteData     *NoteData     `json:"note_data,omitempty"`
-	BookmarkData *BookmarkData `json:"bookmark_data,omitempty"`
-}
-
-type FolderData struct {
-	gorm.Model         `json:"-"`
-	EntityID           uint     `json:"-"`
-	ChildEntitiesCount uint     `json:"child_entities_count"`
-	ChildEntities      []Entity `json:"child_entities"`
-}
-
-type NoteData struct {
-	gorm.Model `json:"-"`
-	EntityID   uint   `json:"entity_id"`
-	Content    string `json:"content"`
-}
-
-type BookmarkData struct {
+type Bookmark struct {
 	gorm.Model  `json:"-"`
-	EntityID    uint   `json:"-"`
+	OwnerID     uint   `owner_id`
+	Hash        string `json:"hash"`
+	Name        string `json:"name"`
+	Shared      bool   `json:"shared"`
+	Pinned      bool   `json:"pinned"`
+	ClickedOn   uint   `json:"clicked_on"`
 	Description string `json:"description" gorm:"size:500"`
 	URL         string `json:"url" gorm:"size:1000"`
 	ImageURL    string `json:"image_url"`
 }
 
-type Tag struct {
+type Note struct {
 	gorm.Model `json:"-"`
+	OwnerID    uint   `owner_id`
 	Hash       string `json:"hash"`
 	Name       string `json:"name"`
-	BookmarkID uint   `json:"bookmark_id"`
+	ClickedOn  uint   `json:"clicked_on"`
+	Content    string `json:"content" gorm:"size:20000"`
+}
+
+type Tag struct {
+	gorm.Model `json:"-"`
+	OwnerID    uint   `owner_id`
+	Hash       string `json:"hash"`
+	Name       string `json:"name"`
+}
+
+type Folder struct {
+	gorm.Model    `json:"-"`
+	OwnerID       uint   `json:"owner_id"`
+	Hash          string `json:"hash"`
+	Name          string `json:"name"`
+	Shared        bool   `json:"shared"`
+	ClickedOn     uint   `json:"clicked_on"`
+	ChildrenCount uint   `json:"children_count"`
+	HasParent     bool   `json:"has_parent"`
+}
+
+type EntityRelation struct {
+	ParentID uint   `json:"parent_id"`
+	ChildID  uint   `json:"child_id"`
+	Type     string `type`
 }

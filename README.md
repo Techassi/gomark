@@ -4,7 +4,8 @@ Web-based bookmark manager written in GO. CURRENTLY IN DEVELOPMENT (NOT FEATURE-
 
 ## Features
 
--   Secure Login Flow with 2FA via Google Authenticator
+-   Secure Login Flow with the optional use of 2FA via TOTP (via Google Authenticator e.g.)
+-   Argon2 Password Hashing
 
 ## Current Development
 
@@ -16,4 +17,3 @@ Web-based bookmark manager written in GO. CURRENTLY IN DEVELOPMENT (NOT FEATURE-
 -   Management of Bookmarks, Notes and Folders
 -   User Management
 -   Sharing of Bookmarks, Notes and Folders
--   Use Argon2 for password hashing

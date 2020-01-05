@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -31,12 +32,11 @@ func (d *DB) Init(c *Config) {
 	}
 
 	db.AutoMigrate(
-		&Entity{},
 		&User{},
 		&Settings{},
-		&BookmarkData{},
-		&FolderData{},
-		&NoteData{},
+		&Bookmark{},
+		&Folder{},
+		&EntityRelation{},
 	)
 
 	d.Conn = db
@@ -159,40 +159,59 @@ func (d *DB) LoadSettings() Settings {
 /////////////////////////////// ENTITY FUNCTIONS ///////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func (d *DB) SaveEntity(e Entity, id uint) {
-	u := User{}
-	d.Conn.First(&u, id)
-	d.Conn.Model(&u).Association("Entities").Append(e)
+func folderJoin(id uint) string {
+	return fmt.Sprintf("SELECT * FROM folders JOIN entity_relations ON folders.id = entity_relations.parent_id AND folders.owner_id = %d AND entity_relations.type = 'folder' Join folders child ON entity_relations.child_id = child.id", id)
+}
+
+func subItem(parentID, childID uint, t string) string {
+	return fmt.Sprintf("INSERT INTO entity_relations (parent_id,child_id,type) VALUES (%d,%d,'%s')", parentID, childID, t)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////// BOOKMARK FUNCTIONS //////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func (d *DB) GetBookmarksByUserID(id uint) []Entity {
-	u := User{}
-	r := []Entity{}
-	d.Conn.First(&u, id)
-	d.Conn.Set("gorm:auto_preload", true).Model(&u).Where("type = ?", "bookmark").Association("Entities").Find(&r)
-	return r
+func (d *DB) SaveBookmark(b Bookmark) {
+	d.Conn.Save(&b)
+}
+
+func (d *DB) GetBookmarksByUserID(id uint) []Bookmark {
+	b := []Bookmark{}
+
+	d.Conn.Set("gorm:auto_preload", true).Where("owner_id = ?", id).Find(&b)
+	return b
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////// FOLDER FUNCTIONS ///////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func (d *DB) GetFoldersByUserID(id uint) []Entity {
-	u := User{}
-	r := []Entity{}
-	d.Conn.First(&u, id)
-	d.Conn.Set("gorm:auto_preload", true).Model(&u).Where("type = ?", "folder").Association("Entities").Find(&r)
-	return r
+func (d *DB) GetFolders(id uint) []Folder {
+	f := []Folder{}
+
+	d.Conn.Where("owner_id = ? AND has_parent = ?", id, false).Find(&f)
+	return f
 }
 
-func (d *DB) SaveEntityToFolder(e Entity, hash string) {
-	r := Entity{}
-	d.Conn.Set("gorm:auto_preload", true).Where("type = ? AND hash = ?", "folder", hash).First(&r)
+func (d *DB) SaveFolder(f Folder) {
+	d.Conn.Save(&f)
+}
 
-	r.FolderData.ChildEntities = append(r.FolderData.ChildEntities, e)
-	d.Conn.Save(&r)
+func (d *DB) SaveSubFolder(parentHash string, sub Folder) error {
+	p := Folder{}
+
+	d.Conn.Where("hash = ?", parentHash).First(&p)
+	if p.ID == 0 {
+		return errors.New("No such parent folder")
+	}
+
+	d.Conn.Save(&sub)
+	d.Conn.Exec(subItem(p.ID, sub.ID, "folder"))
+	return nil
+}
+
+func (d *DB) GetSubFolders(name string) []Folder {
+	f := []Folder{}
+	d.Conn.Raw("SELECT * FROM folders JOIN entity_relations ON folders.id = entity_relations.parent_id AND entity_relations.type = 'folder' Join folders child ON entity_relations.child_id = child.id").Scan(&f)
+	return f
 }
