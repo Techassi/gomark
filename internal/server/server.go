@@ -8,13 +8,14 @@ import (
 
 	m "github.com/Techassi/gomark/internal/models"
 	handle "github.com/Techassi/gomark/internal/server/handlers"
+	tpl "github.com/Techassi/gomark/internal/server/templating"
 	"github.com/Techassi/gomark/internal/util"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
-// Server is the top-level instance.
+// Server is the top-level server instance.
 type Server struct {
 	Port int
 	Mux  *echo.Echo
@@ -40,9 +41,14 @@ func (s *Server) Init(app *m.App) {
 	// Hide startup message
 	s.Mux.HideBanner = true
 
+	f := template.FuncMap{
+		"FormatNoImage": tpl.FormatNoImage,
+		"FormatColor":   tpl.FormatColor,
+	}
+
 	// Register template renderer
 	s.Mux.Renderer = &TemplateRenderer{
-		Templates: template.Must(template.ParseGlob(util.GetAbsPath("templates/*/*.html"))),
+		Templates: template.Must(template.New("").Funcs(f).ParseGlob(util.GetAbsPath("templates/*/*.html"))),
 	}
 
 	// Register middlewares
@@ -62,17 +68,19 @@ func (s *Server) Init(app *m.App) {
 // will recover, print a stack trace and the HTTPErrorHandler handles the panic.
 func (s *Server) Run() {
 	// Static routes
-	s.Mux.Static("/static", util.GetAbsPath("public"))
-	s.Mux.Static("/2fa", util.GetAbsPath("public/2fa"))
+	s.Mux.Static("/js", util.GetAbsPath("public/js/dist"))
+	s.Mux.Static("/css", util.GetAbsPath("public/scss"))
+	s.Mux.Static("/assets", util.GetAbsPath("public/assets"))
+	s.Mux.Static("/font", util.GetAbsPath("public/assets/fonts"))
 
 	// Unprotected routes
-	s.Mux.GET("/login", handle.UI_LoginPage)
-	s.Mux.GET("/code", handle.UI_2FACodePage)
-	s.Mux.GET("/register", handle.UI_RegisterPage)
-	s.Mux.GET("/s/:hash", handle.UI_SharedBookmarkPage)
+	s.Mux.GET("/login", handle.UILoginPage)
+	s.Mux.GET("/code", handle.UI2FACodePage)
+	s.Mux.GET("/register", handle.UIRegisterPage)
+	s.Mux.GET("/s/:hash", handle.UISharedBookmarkPage)
 
 	// Custom 404 error page
-	s.Mux.GET("/404", handle.UI_404Page)
+	s.Mux.GET("/404", handle.UI404Page)
 
 	s.Mux.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -89,13 +97,13 @@ func (s *Server) Run() {
 		ErrorHandlerWithContext: handle.AUTH_JWTError,
 	}))
 
-	pr.GET("", handle.UI_DashboardPage)
-	pr.GET("notes", handle.UI_NotesPage)
-	pr.GET("shared", handle.UI_SharedPage)
-	pr.GET("recent", handle.UI_RecentBookmarksPage)
-	pr.GET("bookmarks", handle.UI_BookmarksPage)
-	pr.GET("b/:hash", handle.UI_BookmarkPage)
-	pr.GET("n/:hash", handle.UI_NotePage)
+	pr.GET("", handle.UIHomePage)
+	pr.GET("notes", handle.UINotesPage)
+	pr.GET("shared", handle.UISharedPage)
+	pr.GET("recent", handle.UIRecentBookmarksPage)
+	pr.GET("bookmarks", handle.UIBookmarksPage)
+	pr.GET("b/:hash", handle.UIBookmarkPage)
+	pr.GET("n/:hash", handle.UINotePage)
 
 	// API routes
 	api := s.Mux.Group("/api")
@@ -107,23 +115,23 @@ func (s *Server) Run() {
 
 	// v1 API routes
 	v1 := api.Group("/v1")
-	v1.GET("/recent", handle.API_GetRecentBookmarks)
-	v1.GET("/bookmarks", handle.API_GetBookmarks)
-	v1.GET("/bookmarks/:hash", handle.API_GetBookmark)
-	v1.GET("/bookmarks/:hash/tags", handle.API_GetBookmarkTags)
-	v1.GET("/folders", handle.API_GetFolders)
+	v1.GET("/recent", handle.APIGetRecentBookmarks)
+	v1.GET("/bookmarks", handle.APIGetBookmarks)
+	v1.GET("/bookmarks/:hash", handle.APIGetBookmark)
+	v1.GET("/bookmarks/:hash/tags", handle.APIGetBookmarkTags)
+	v1.GET("/folders", handle.APIGetFolders)
+	v1.GET("/folders/:hash", handle.APIGetSubFolders)
 
-	v1.POST("/bookmark", handle.API_PostBookmark)
-	v1.POST("/bookmark/:hash", handle.API_UpdateBookmark)
-	v1.POST("/bookmark/:hash/tags", handle.API_PostBookmarkTags)
-	v1.POST("/folder", handle.API_PostFolder)
-	v1.POST("/folder/:hash", handle.API_PostSubFolder)
+	v1.POST("/bookmark", handle.APIPostBookmark)
+	v1.POST("/bookmark/:hash", handle.APIUpdateBookmark)
+	v1.POST("/bookmark/:hash/tags", handle.APIPostBookmarkTags)
+	v1.POST("/folder", handle.APIPostFolder)
+	v1.POST("/folder/:hash", handle.APIPostEntityToFolder)
 
 	// Auth routes
 	auth := s.Mux.Group("/auth")
 	auth.POST("/login", handle.AUTH_Login)
 	auth.POST("/code", handle.AUTH_2FACode)
-	// auth.POST("/logout", handle.AUTH_JWTLogout)
 	auth.POST("/register", handle.AUTH_Register)
 
 	// Startup the router

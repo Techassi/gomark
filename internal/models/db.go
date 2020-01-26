@@ -159,8 +159,12 @@ func (d *DB) LoadSettings() Settings {
 /////////////////////////////// ENTITY FUNCTIONS ///////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func folderJoin(id uint) string {
-	return fmt.Sprintf("SELECT * FROM folders JOIN entity_relations ON folders.id = entity_relations.parent_id AND folders.owner_id = %d AND entity_relations.type = 'folder' Join folders child ON entity_relations.child_id = child.id", id)
+func folderJoin(hash string, id uint) string {
+	return fmt.Sprintf("SELECT c.* FROM folders JOIN entity_relations ON folders.id = entity_relations.parent_id JOIN folders c ON entity_relations.child_id = c.id WHERE folders.owner_id = %d AND folders.hash = '%s' AND entity_relations.type = 'folder'", id, hash)
+}
+
+func entityJoin(hash string, id uint) string {
+	return fmt.Sprintf("SELECT c.* FROM folders JOIN entity_relations ON folders.id = entity_relations.parent_id JOIN folders c ON entity_relations.child_id = c.id WHERE folders.owner_id = %d AND folders.hash = '%s'", id, hash)
 }
 
 func subItem(parentID, childID uint, t string) string {
@@ -175,6 +179,23 @@ func (d *DB) SaveBookmark(b Bookmark) {
 	d.Conn.Save(&b)
 }
 
+func (d *DB) SaveBookmarkToFolder(parentHash string, b Bookmark) error {
+	p := Folder{}
+
+	d.Conn.Where("hash = ?", parentHash).First(&p)
+	if p.ID == 0 {
+		return errors.New("No such parent folder")
+	}
+
+	// Update the ChildrenCount of the parent folder. Save both the parent and
+	// child folder. Create an entry in the relation table
+	p.ChildrenCount++
+	d.Conn.Save(&p)
+	d.Conn.Save(&b)
+	d.Conn.Exec(subItem(p.ID, b.ID, "bookmark"))
+	return nil
+}
+
 func (d *DB) GetBookmarksByUserID(id uint) []Bookmark {
 	b := []Bookmark{}
 
@@ -185,13 +206,6 @@ func (d *DB) GetBookmarksByUserID(id uint) []Bookmark {
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////// FOLDER FUNCTIONS ///////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-
-func (d *DB) GetFolders(id uint) []Folder {
-	f := []Folder{}
-
-	d.Conn.Where("owner_id = ? AND has_parent = ?", id, false).Find(&f)
-	return f
-}
 
 func (d *DB) SaveFolder(f Folder) {
 	d.Conn.Save(&f)
@@ -205,13 +219,30 @@ func (d *DB) SaveSubFolder(parentHash string, sub Folder) error {
 		return errors.New("No such parent folder")
 	}
 
+	// Update the ChildrenCount of the parent folder. Save both the parent and
+	// child folder. Create an entry in the relation table
+	p.ChildrenCount++
+	d.Conn.Save(&p)
 	d.Conn.Save(&sub)
 	d.Conn.Exec(subItem(p.ID, sub.ID, "folder"))
 	return nil
 }
 
-func (d *DB) GetSubFolders(name string) []Folder {
+func (d *DB) GetFolders(id uint) []Folder {
 	f := []Folder{}
-	d.Conn.Raw("SELECT * FROM folders JOIN entity_relations ON folders.id = entity_relations.parent_id AND entity_relations.type = 'folder' Join folders child ON entity_relations.child_id = child.id").Scan(&f)
+
+	d.Conn.Where("owner_id = ? AND has_parent = ?", id, false).Find(&f)
+	return f
+}
+
+func (d *DB) GetSubFolders(hash string, id uint) []Folder {
+	f := []Folder{}
+	d.Conn.Raw(folderJoin(hash, id)).Scan(&f)
+	return f
+}
+
+func (d *DB) GetSubEntities(hash string, id uint) []Folder {
+	f := []Folder{}
+	d.Conn.Raw(entityJoin(hash, id)).Scan(&f)
 	return f
 }

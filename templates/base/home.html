@@ -1,50 +1,66 @@
 <!DOCTYPE html>
 <html lang="de" dir="ltr">
-    <head>
-        <meta charset="utf-8">
-        <base href="">
-        <meta name="viewport" content="initial-scale=1.0, width=device-width">
-        <meta name="description" content="Gomark - A versatile bookmark manager">
-        <meta name="robots" content="index, follow" />
 
-        <meta property="og:description" content="Gomark - A versatile bookmark manager">
-        <meta property="og:title" content="Gomark" />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="" />
-        <meta property="og:image" content="" />
+<head>
+    <meta charset="utf-8">
+    <base href="">
+    <meta name="viewport" content="initial-scale=1.0, width=device-width">
+    <meta name="description" content="Gomark - A versatile bookmark manager">
+    <meta name="robots" content="index, follow" />
 
-        <title>Gomark | Home</title>
+    <meta property="og:description" content="Gomark - A versatile bookmark manager">
+    <meta property="og:title" content="Gomark" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="" />
+    <meta property="og:image" content="" />
 
-        <link rel="apple-touch-icon" sizes="57x57" href="assets/favicon/apple-icon-57x57.png">
-        <link rel="apple-touch-icon" sizes="60x60" href="assets/favicon/apple-icon-60x60.png">
-        <link rel="apple-touch-icon" sizes="72x72" href="assets/favicon/apple-icon-72x72.png">
-        <link rel="apple-touch-icon" sizes="76x76" href="assets/favicon/apple-icon-76x76.png">
-        <link rel="apple-touch-icon" sizes="114x114" href="assets/favicon/apple-icon-114x114.png">
-        <link rel="apple-touch-icon" sizes="120x120" href="assets/favicon/apple-icon-120x120.png">
-        <link rel="apple-touch-icon" sizes="144x144" href="assets/favicon/apple-icon-144x144.png">
-        <link rel="apple-touch-icon" sizes="152x152" href="assets/favicon/apple-icon-152x152.png">
-        <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-icon-180x180.png">
-        <link rel="icon" type="image/png" sizes="192x192"  href="assets/favicon/android-icon-192x192.png">
-        <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32x32.png">
-        <link rel="icon" type="image/png" sizes="96x96" href="assets/favicon/favicon-96x96.png">
-        <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png">
-        <link rel="manifest" href="assets/favicon/manifest.json">
-        <meta name="msapplication-TileColor" content="#ffffff">
-        <meta name="msapplication-TileImage" content="assets/favicon/ms-icon-144x144.png">
-        <meta name="theme-color" content="#ffffff">
+    <title>Gomark | Home</title>
 
-        <link rel="stylesheet" href="/style/app.min.css">
-    </head>
-    <body>
-        {{ template "nav/side" }}
-        <nav class="top">
+    <link rel="apple-touch-icon" sizes="57x57" href="assets/favicon/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="assets/favicon/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="assets/favicon/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="assets/favicon/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="assets/favicon/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="assets/favicon/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="assets/favicon/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="assets/favicon/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="assets/favicon/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon/favicon-16x16.png">
+    <link rel="manifest" href="assets/favicon/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="assets/favicon/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
 
-        </nav>
-        <main>
-            <div class="gomark_content">
+    <link rel="stylesheet" href="/css/app.min.css">
+</head>
 
-            </div>
-        </main>
-        <footer></footer>
-    </body>
+<body>
+    <header>
+        <div class="menu">
+            <i class="material-icons">menu</i>
+        </div>
+        <div class="headline">
+            <h1>Bookmarks</h1>
+        </div>
+        <div class="slider">
+            <span>Home</span>
+            <span>All</span>
+            <div class="bg"></div>
+        </div>
+    </header>
+    <main>
+        <div class="gomark_most_used">
+            <h2>Most used bookmarks</h2>
+        </div>
+        <div class="gomark_recently_added">
+            <h2>Recent bookmarks</h2>
+            {{ range .bookmarks }} {{ template "entity/bookmark" . }} {{ end }}
+        </div>
+    </main>
+    <footer></footer>
+</body>
+
 </html>

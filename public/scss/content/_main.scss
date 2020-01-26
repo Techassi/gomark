@@ -1,3 +1,28 @@
-.gomark_content {
-    padding: 100px 50px 0 100px;
+main {
+    background-color: $g-4;
+    width: 100%;
+    height: auto;
+    padding: 120px 20px 0 20px;
+    display: flex;
+    flex-wrap: wrap;
+
+    h2 {
+        font-size: 1.5rem;
+        line-height: 1.5rem;
+        font-weight: 500;
+        color: $w;
+        margin: 10px 0 0 0;
+    }
+
+    .gomark_most_used {
+        width: 100%;
+        height: auto;
+    }
+
+    .gomark_recently_added {
+        width: 100%;
+        height: auto;
+        display: flex;
+        flex-wrap: wrap;
+    }
 }

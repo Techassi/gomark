@@ -6,7 +6,7 @@ import (
 
 type Bookmark struct {
 	gorm.Model  `json:"-"`
-	OwnerID     uint   `owner_id`
+	OwnerID     uint   `json:"owner_id"`
 	Hash        string `json:"hash"`
 	Name        string `json:"name"`
 	Shared      bool   `json:"shared"`
@@ -15,6 +15,7 @@ type Bookmark struct {
 	Description string `json:"description" gorm:"size:500"`
 	URL         string `json:"url" gorm:"size:1000"`
 	ImageURL    string `json:"image_url"`
+	HasParent   bool   `json:"has_parent"`
 }
 
 type Note struct {
@@ -45,6 +46,7 @@ type Folder struct {
 }
 
 type EntityRelation struct {
+	ID       uint   `json:"id" gorm:"UNIQUE;AUTO_INCREMENT"`
 	ParentID uint   `json:"parent_id"`
 	ChildID  uint   `json:"child_id"`
 	Type     string `type`

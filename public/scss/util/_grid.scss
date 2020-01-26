@@ -1,0 +1,310 @@
+$col-width: 100% / 12;
+$sizes: (
+  1: 8.333333%,
+  2: 16.666667%,
+  3: 25%,
+  4: 33.333333%,
+  5: 41.666667%,
+  6: 50%,
+  7: 58.333333%,
+  8: 66.666667%,
+  9: 75%,
+  10: 83.333333%,
+  11: 91.666667%,
+  12: 100%
+);
+
+@mixin query($width) {
+  @media screen and (max-width: $width) {
+    @content;
+  }
+}
+
+@mixin min-query($width) {
+  @media screen and (min-width: $width) {
+    @content;
+  }
+}
+
+%row-props {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -20px;
+  margin-left: -20px;
+}
+
+%wrapper-props {
+  width: 100%;
+  padding: 0 20px;
+  margin: 0 auto;
+}
+
+.wrapper {
+  @extend %wrapper-props;
+  max-width: 1440px;
+
+  @include query(1440px) {
+    max-width: 1200px;
+  }
+
+  &.full-height {
+    height: 100vh;
+
+    & > .row {
+      height: 100vh;
+    }
+
+    @include query(450px) {
+      height: auto;
+      padding-top: 75px;
+
+      & > .row {
+        height: auto;
+      }
+    }
+  }
+}
+
+.wrapper-fluid {
+  width: 100%;
+  padding: 0 15px;
+}
+
+.row {
+  @extend %row-props;
+}
+
+.row-pad {
+  @extend %row-props;
+  padding-top: 15px;
+}
+
+/////////////////////////////////////////////
+////////////// ROWS - NO GAPS ///////////////
+/////////////////////////////////////////////
+
+.row-no-gap {
+  @extend %row-props;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+%col-props {
+  position: relative;
+  width: 100%;
+  min-height: 1px;
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
+/////////////////////////////////////////////
+///////////////// COLUMNS ///////////////////
+/////////////////////////////////////////////
+
+@each $name, $size in $sizes {
+  .col-#{$name} {
+    @extend %col-props;
+    flex: 0 0 $size;
+    max-width: $size;
+  }
+}
+
+@each $name, $size in $sizes {
+  .col-m-#{$name} {
+    @extend %col-props;
+    @include query(1440px) {
+      flex: 0 0 $size;
+      max-width: $size;
+    }
+  }
+}
+
+@each $name, $size in $sizes {
+  .col-t-#{$name} {
+    @extend %col-props;
+    @include query(768px) {
+      flex: 0 0 $size;
+      max-width: $size;
+    }
+  }
+}
+
+@each $name, $size in $sizes {
+  .col-s-#{$name} {
+    @extend %col-props;
+    @include query(450px) {
+      flex: 0 0 $size;
+      max-width: $size;
+    }
+  }
+}
+
+/////////////////////////////////////////////
+//////////// COLUMNS - NO GAPS //////////////
+/////////////////////////////////////////////
+
+.col-no-gap {
+  position: relative;
+  width: 100%;
+  min-height: 1px;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.col-m-no-gap {
+  @include query(1440px) {
+    position: relative;
+    width: 100%;
+    min-height: 1px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+.col-t-no-gap {
+  @include query(768px) {
+    position: relative;
+    width: 100%;
+    min-height: 1px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+.col-s-no-gap {
+  @include query(450px) {
+    position: relative;
+    width: 100%;
+    min-height: 1px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+/////////////////////////////////////////////
+///////////////// OFFSETS ///////////////////
+/////////////////////////////////////////////
+
+////////////// OFFSETS LEFT /////////////////
+
+@each $name, $size in $sizes {
+  .offset-#{$name} {
+    margin-left: $size;
+  }
+}
+
+.offset-none {
+  margin-left: 0;
+}
+
+@each $name, $size in $sizes {
+  .offset-m-#{$name} {
+    @include query(1440px) {
+      margin-left: $size;
+    }
+  }
+}
+
+.offset-m-none {
+  @include query(1440px) {
+    margin-left: 0;
+  }
+}
+
+@each $name, $size in $sizes {
+  .offset-t-#{$name} {
+    @include query(768px) {
+      margin-left: $size;
+    }
+  }
+}
+
+.offset-t-none {
+  @include query(768px) {
+    margin-left: 0;
+  }
+}
+
+@each $name, $size in $sizes {
+  .offset-s-#{$name} {
+    @include query(450px) {
+      margin-left: $size;
+    }
+  }
+}
+
+.offset-s-none {
+  @include query(450px) {
+    margin-left: 0;
+  }
+}
+
+////////////// OFFSETS RIGHT ////////////////
+
+@each $name, $size in $sizes {
+  .offset-right-#{$name} {
+    margin-right: $size;
+  }
+
+  .offset-right-t-#{$name} {
+    @include query(768px) {
+      margin-right: $size;
+    }
+  }
+
+  .offset-right-s-#{$name} {
+    @include query(768px) {
+      margin-right: $size;
+    }
+  }
+}
+
+/////////////////////////////////////////////
+////////////////// ORDER ////////////////////
+/////////////////////////////////////////////
+
+@each $name, $size in $sizes {
+  .order-#{$name} {
+    order: $name;
+  }
+}
+
+.order-t-none {
+  @include query(768px) {
+    order: unset;
+  }
+}
+
+.order-t-1 {
+  @include query(768px) {
+    order: 1;
+  }
+}
+
+.col-t-visible {
+  display: none;
+
+  @include query(768px) {
+    display: block;
+  }
+}
+
+.col-t-hidden {
+  @include query(768px) {
+    display: none;
+  }
+}
+
+.col-s-hidden {
+  @include query(450px) {
+    display: none !important;
+  }
+}
+
+.col-s-visible {
+  display: none !important;
+
+  @include query(450px) {
+    display: block !important;
+  }
+}

@@ -18,8 +18,9 @@
   },
   "dependencies": {
     "@barba/core": "^2.9.2",
-    "terser-webpack-plugin": "^1.4.2",
-    "serialize-javascript": ">=2.1.1"
+    "hammerjs": "^2.0.8",
+    "serialize-javascript": ">=2.1.1",
+    "terser-webpack-plugin": "^1.4.2"
   },
   "main": "webpack.config.js",
   "description": ""

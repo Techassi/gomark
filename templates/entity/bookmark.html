@@ -1,0 +1,12 @@
+{{ define "entity/bookmark" }}
+<div class="gomark_bookmark">
+    {{ template "entity/bookmark-image" . }}
+    <div class="bookmark_info">
+        <a class="name" href="b/{{ .Hash }}">
+            <h3>{{ .Name }}</h3>
+        </a>
+        <a class="link" href="{{ .URL }}" target="_blank" rel="noreferrer">{{ .URL }}</a>
+        <p>{{ .Description }}</p>
+    </div>
+</div>
+{{ end }}

@@ -13,15 +13,15 @@ import (
 ///////////////////////////// AUTHENTICATION PAGES /////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func UI_LoginPage(c echo.Context) error {
+func UILoginPage(c echo.Context) error {
 	return c.Render(http.StatusOK, "login.html", map[string]interface{}{})
 }
 
-func UI_2FACodePage(c echo.Context) error {
+func UI2FACodePage(c echo.Context) error {
 	return c.Render(http.StatusOK, "code.html", map[string]interface{}{})
 }
 
-func UI_RegisterPage(c echo.Context) error {
+func UIRegisterPage(c echo.Context) error {
 	app := c.Get("app").(*m.App)
 
 	if !app.RegisterEnabled() {
@@ -35,7 +35,7 @@ func UI_RegisterPage(c echo.Context) error {
 ////////////////////////////////// ERROR PAGES /////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func UI_404Page(c echo.Context) error {
+func UI404Page(c echo.Context) error {
 	return c.Render(http.StatusOK, "404.html", map[string]interface{}{})
 }
 
@@ -43,19 +43,19 @@ func UI_404Page(c echo.Context) error {
 //////////////////////////////// BOOKMARK PAGES ////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func UI_SharedBookmarkPage(c echo.Context) error {
+func UISharedBookmarkPage(c echo.Context) error {
 	return c.Render(http.StatusOK, "shared-bookmark.html", map[string]interface{}{})
 }
 
-func UI_RecentBookmarksPage(c echo.Context) error {
+func UIRecentBookmarksPage(c echo.Context) error {
 	return c.Render(http.StatusOK, "recent-bookmarks.html", map[string]interface{}{})
 }
 
-func UI_BookmarksPage(c echo.Context) error {
+func UIBookmarksPage(c echo.Context) error {
 	return c.Render(http.StatusOK, "bookmarks.html", map[string]interface{}{})
 }
 
-func UI_BookmarkPage(c echo.Context) error {
+func UIBookmarkPage(c echo.Context) error {
 	return c.Render(http.StatusOK, "bookmark.html", map[string]interface{}{})
 }
 
@@ -63,11 +63,11 @@ func UI_BookmarkPage(c echo.Context) error {
 ////////////////////////////////// NOTE PAGES //////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func UI_NotePage(c echo.Context) error {
+func UINotePage(c echo.Context) error {
 	return c.Render(http.StatusOK, "note.html", map[string]interface{}{})
 }
 
-func UI_NotesPage(c echo.Context) error {
+func UINotesPage(c echo.Context) error {
 	return c.Render(http.StatusOK, "notes.html", map[string]interface{}{})
 }
 
@@ -75,7 +75,10 @@ func UI_NotesPage(c echo.Context) error {
 //////////////////////////////// DASHBOARD PAGES ///////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func UI_DashboardPage(c echo.Context) error {
+// UIHomePage renders the home page
+func UIHomePage(c echo.Context) error {
+	app := c.Get("app").(*m.App)
+	
 	user := c.Get("user")
 	if user == nil {
 		return c.Redirect(http.StatusMovedPermanently, "/login")
@@ -83,15 +86,18 @@ func UI_DashboardPage(c echo.Context) error {
 
 	token := user.(*jwt.Token)
 	claims := token.Claims.(jwt.MapClaims)
+	userID := uint(claims["userid"].(float64))
 
-	return c.String(http.StatusOK, claims["username"].(string))
-	// return c.Render(http.StatusOK, "dashboard.html", map[string]interface{}{})
+	return c.Render(http.StatusOK, "home.html", map[string]interface{}{
+		"user": claims["username"].(string),
+		"bookmarks": app.DB.GetBookmarksByUserID(userID),
+	})
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////// SHARED PAGES /////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func UI_SharedPage(c echo.Context) error {
+func UISharedPage(c echo.Context) error {
 	return c.Render(http.StatusOK, "shared.html", map[string]interface{}{})
 }
