@@ -13,6 +13,7 @@ type App struct {
 func (a *App) Init(c string) {
 	a.Config = &Config{}
 	a.Config.Init(c)
+	a.Config.SetURL()
 
 	a.DB = &DB{}
 	a.DB.Init(a.Config)

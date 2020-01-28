@@ -12,8 +12,8 @@ import Login from "./namespaces/login";
 /////////////////////////////////////////////
 
 console.info(
-  "%c🗲 gomark @ https://github.com/Techassi/gomark",
-  "color: #FFF; background: #011C41; padding: 10px 10px;"
+    "%c🗲 gomark @ https://github.com/Techassi/gomark",
+    "color: #FFF; background: #011C41; padding: 10px 10px;"
 );
 
 /////////////////////////////////////////////
@@ -27,46 +27,46 @@ let login = new Login();
 /////////////////////////////////////////////
 
 barba.init({
-  debug: true,
-  transitions: [
-    {
-      name: "default-transition",
-      leave(data) {
-        return new Promise(resolve => {
-          anime({
-            targets: data.current.container,
-            opacity: [1, 0],
-            duration: 500,
-            easing: "linear",
-            complete: () => {
-              resolve();
+    debug: true,
+    transitions: [
+        {
+            name: "default-transition",
+            leave(data) {
+                return new Promise(resolve => {
+                    anime({
+                        targets: data.current.container,
+                        opacity: [1, 0],
+                        duration: 500,
+                        easing: "linear",
+                        complete: () => {
+                            resolve();
+                        }
+                    });
+                });
+            },
+            enter(data) {
+                return new Promise(resolve => {
+                    resolve();
+                    anime({
+                        targets: data.next.container,
+                        opacity: [0, 1],
+                        duration: 500,
+                        easing: "linear"
+                    });
+                });
             }
-          });
-        });
-      },
-      enter(data) {
-        return new Promise(resolve => {
-          resolve();
-          anime({
-            targets: data.next.container,
-            opacity: [0, 1],
-            duration: 500,
-            easing: "linear"
-          });
-        });
-      }
-    }
-  ],
-  views: [
-    {
-      namespace: "login",
-      beforeEnter(data) {
-        login.Init(data);
-      },
-      afterEnter() {},
-      beforeLeave() {
-        login.Kill();
-      }
-    }
-  ]
+        }
+    ],
+    views: [
+        {
+            namespace: "login",
+            beforeEnter(data) {
+                login.Init(data);
+            },
+            afterEnter() {},
+            beforeLeave() {
+                login.Kill();
+            }
+        }
+    ]
 });

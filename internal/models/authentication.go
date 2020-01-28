@@ -1,18 +1,23 @@
 package models
 
 import (
-	// "fmt"
+	"encoding/base64"
+	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 
+	"github.com/Techassi/gomark/internal/constants"
 	"github.com/Techassi/gomark/internal/server/status"
 	"github.com/Techassi/gomark/internal/util"
 
 	"github.com/dgrijalva/jwt-go"
 	dgoogauth "github.com/dgryski/dgoogauth"
 	"github.com/labstack/echo/v4"
+	qrcode "github.com/skip2/go-qrcode"
 )
 
+// Authentication handles all authentication routines within the app
 type Authentication struct {
 	Type    string
 	User    *User
@@ -29,22 +34,6 @@ func (a *Authentication) Init(t string, c echo.Context) {
 	a.Type = t
 	a.Context = c
 	a.App = c.Get("app").(*App)
-}
-
-// CheckCookie checks if there is an Authorization cookie and if there is checks
-// if it is valid
-func (a *Authentication) CheckAuthorizationCookie() map[string]interface{} {
-	_, err := a.Context.Cookie("Authorization")
-	if err == nil {
-		user := a.Context.Get("user")
-		if user == nil {
-			return status.AUTH_InvalidCredentials()
-		}
-
-		return status.AUTH_AlreadySignedIn()
-	}
-
-	return nil
 }
 
 // SetUser sets the user in the authentication struct
@@ -68,8 +57,9 @@ func (a *Authentication) ValidateNewCredentials(u, p string) bool {
 ////////////////////////////////////////////////////////////////////////////////
 
 // TODO: Add error handling
-func (a *Authentication) Register(user, pass, last, first, mail string) {
-	a.App.DB.Register(user, pass, last, first, mail)
+// Register handles the registration process
+func (a *Authentication) Register(user, pass, last, first, mail string) error {
+	return a.App.DB.Register(user, pass, last, first, mail)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -98,7 +88,6 @@ func (a *Authentication) SetTemp2FAToken() map[string]interface{} {
 	a.Context.SetCookie(c)
 
 	a.App.DB.SetTemp2FAToken(a.User, temp2FAToken, expirationTime)
-
 	return nil
 }
 
@@ -111,8 +100,7 @@ func (a *Authentication) CheckTemp2FAToken() map[string]interface{} {
 		return status.AUTH_2FATempTokenError()
 	}
 
-	a.User = a.App.DB.CheckTemp2FAToken(tempToken.Value)
-	if a.User.ID == 0 {
+	if valid := a.App.DB.CheckTemp2FAToken(tempToken.Value); !valid {
 		return status.AUTH_2FATempTokenError()
 	}
 
@@ -137,6 +125,39 @@ func (a *Authentication) Validate2FACode() bool {
 
 	// Code is valid, so return true
 	return true
+}
+
+func (a *Authentication) Create2FACode(userID uint, username string) (string, error) {
+	// Create 2FA secret
+	twoFASecretBase32, err := util.RandomCryptoString(10)
+	if err != nil {
+		return "", err
+	}
+
+	// Create the OTP URI
+	otpURI, uriErr := url.Parse("otpauth://totp")
+	if uriErr != nil {
+		return "", err
+	}
+
+	otpURI.Path += fmt.Sprintf("/%s:%s", url.PathEscape(constants.TWOFA_ISSUER), username)
+	params := url.Values{}
+	params.Add("secret", twoFASecretBase32)
+	params.Add("issuer", constants.TWOFA_ISSUER)
+	otpURI.RawQuery = params.Encode()
+
+	// Create QR Code
+	qr, err := qrcode.Encode(otpURI.String(), qrcode.Medium, 256)
+	if err != nil {
+		return "", err
+	}
+
+	// Update the user in the DB and save the twoFASecretBase32 key
+	err = a.App.DB.Update2FA(username, twoFASecretBase32)
+	if err != nil {
+		return "", err
+	}
+	return base64.StdEncoding.EncodeToString(qr), nil
 }
 
 ////////////////////////////////////////////////////////////////////////////////

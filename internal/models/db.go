@@ -54,20 +54,24 @@ func Connection(c *Config) string {
 func (d *DB) ValidateCredentials(username, inputPass string) (bool, User) {
 	user := User{}
 
+	if username == "" || inputPass == "" {
+		return false, User{}
+	}
+
 	// Check if the 'User' table exists
 	if !d.Conn.HasTable(&user) {
 		return false, User{}
 	}
 
 	// Check if the user exists via the username
-	r := d.Conn.Where("username = ?", username).First(&user).RecordNotFound()
-	if r {
+	d.Conn.Where("username = ?", username).First(&user)
+	if user.ID == 0 {
 		return false, User{}
 	}
 
 	// Compare the provided and saved password
-	_, err := util.ComparePassword(inputPass, user.Password)
-	if err != nil {
+	correct, err := util.ComparePassword(inputPass, user.Password)
+	if err != nil || !correct {
 		return false, User{}
 	}
 
@@ -82,8 +86,11 @@ func (d *DB) ValidateNewCredentials(u, p string) bool {
 ////////////////////////////// REGISTER FUNCTIONS //////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func (d *DB) Register(user, pass, last, first, mail string) {
-	hashedPass, _ := util.HashPassword(pass)
+func (d *DB) Register(user, pass, last, first, mail string) error {
+	hashedPass, err := util.HashPassword(pass)
+	if err != nil {
+		return err
+	}
 
 	d.Conn.Create(&User{
 		Username:  user,
@@ -92,6 +99,7 @@ func (d *DB) Register(user, pass, last, first, mail string) {
 		Firstname: first,
 		EMail:     mail,
 	})
+	return nil
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -110,24 +118,30 @@ func (d *DB) SetTemp2FAToken(u *User, t string, expirationTime time.Time) error 
 	return nil
 }
 
-// CheckTempTwoFAToken checks the temp 2FA token and its expiration timestamp
-// TODO: Check expiration timestamp
-func (d *DB) CheckTemp2FAToken(t string) *User {
+// CheckTemp2FAToken checks the temp 2FA token and its expiration timestamp
+func (d *DB) CheckTemp2FAToken(t string) bool {
 	var user User
 
 	d.Conn.Where("temp_two_fa_token = ? AND temp_two_fa_token_date > ?", t, time.Now()).First(&user)
+	if user.ID == 0 {
+		return false
+	}
 
-	return &user
+	return true
 }
 
-func (d *DB) Update2FA(u *User, key string) {
+func (d *DB) Update2FA(username, key string) error {
 	var user User
+	d.Conn.Where("username = ?", username).First(&user)
+	if user.ID == 0 {
+		errors.New("User with username not found")
+	}
 
-	d.Conn.Where("username = ? AND password = ?", u.Username, u.Password).First(&user)
 	user.TwoFA = true
 	user.TwoFAKey = key
 
 	d.Conn.Save(&user)
+	return nil
 }
 
 ////////////////////////////////////////////////////////////////////////////////

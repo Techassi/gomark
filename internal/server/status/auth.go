@@ -72,6 +72,17 @@ func AUTH_SuccessfullyRegistered() map[string]interface{} {
 	}
 }
 
+// AUTH_NotRegistered respresents the status when the user got
+// successfully registered
+func AUTH_NotRegistered() map[string]interface{} {
+	return map[string]interface{}{
+		"status":  http.StatusInternalServerError,
+		"scope":   "auth",
+		"error":   "not_registered",
+		"message": "The server encountered an internal error, please try again.",
+	}
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////// 2FA ERRORS /////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////

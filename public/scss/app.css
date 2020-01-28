@@ -221,17 +221,6 @@ main .gomark_recently_added {
   margin: 10px 0 10px 0;
 }
 
-.gomark_bookmark::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 20%;
-  height: 100%;
-  background: -webkit-gradient(linear, left top, right top, from(rgba(0, 0, 0, 0)), to(black));
-  background: linear-gradient(to right, rgba(0, 0, 0, 0) 0%, black 100%);
-}
-
 .gomark_bookmark .bookmark_image {
   display: block;
   position: relative;
@@ -283,10 +272,20 @@ main .gomark_recently_added {
 .gomark_bookmark .bookmark_info a {
   display: block;
   width: 100%;
+  position: relative;
+}
+
+.gomark_bookmark .bookmark_info a::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20%;
+  height: 100%;
+  background: -webkit-gradient(linear, left top, right top, from(rgba(0, 0, 0, 0)), to(black));
+  background: linear-gradient(to right, rgba(0, 0, 0, 0) 0%, black 100%);
 }
 
 .gomark_bookmark .bookmark_info a.name h3 {
-  position: relative;
   font-size: 1.5rem;
   line-height: 1.2;
   max-height: calc(1.5rem * 1.2);
@@ -299,6 +298,7 @@ main .gomark_recently_added {
   line-height: 1.2;
   color: #ffffff;
   margin: 5px 0 0 0;
+  white-space: nowrap;
 }
 
 .gomark_bookmark .bookmark_info p {

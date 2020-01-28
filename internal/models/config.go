@@ -2,15 +2,20 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 
+	cnst "github.com/Techassi/gomark/internal/constants"
 	"github.com/Techassi/gomark/internal/util"
 )
 
 // Config represents the structure of the config.json file.
 type Config struct {
-	DB struct {
+	Domain  string `json:"domain"`
+	BaseURL string `json:"base_url"`
+	UseSSL  bool   `json:"use_ssl"`
+	DB      struct {
 		User     string `json:"user"`
 		Password string `json:"password"`
 		Host     string `json:"host"`
@@ -50,4 +55,14 @@ func (c *Config) Init(p string) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+// SetURL sets all URLs based on the config's domain
+func (c *Config) SetURL() {
+	if c.UseSSL {
+		c.BaseURL = fmt.Sprintf("%s%s/", cnst.WebHTTPSScheme, c.Domain)
+		return
+	}
+
+	c.BaseURL = fmt.Sprintf("%s%s/", cnst.WebHTTPScheme, c.Domain)
 }

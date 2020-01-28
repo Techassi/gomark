@@ -78,7 +78,7 @@ func UINotesPage(c echo.Context) error {
 // UIHomePage renders the home page
 func UIHomePage(c echo.Context) error {
 	app := c.Get("app").(*m.App)
-	
+
 	user := c.Get("user")
 	if user == nil {
 		return c.Redirect(http.StatusMovedPermanently, "/login")
@@ -89,7 +89,8 @@ func UIHomePage(c echo.Context) error {
 	userID := uint(claims["userid"].(float64))
 
 	return c.Render(http.StatusOK, "home.html", map[string]interface{}{
-		"user": claims["username"].(string),
+		"config":    app.Config,
+		"user":      claims["username"].(string),
 		"bookmarks": app.DB.GetBookmarksByUserID(userID),
 	})
 }

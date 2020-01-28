@@ -3,18 +3,18 @@
 
 <head>
     <meta charset="utf-8">
-    <base href="{{ .config.BaseURL }}">
+    <base href="">
     <meta name="viewport" content="initial-scale=1.0, width=device-width">
     <meta name="description" content="Gomark - A versatile bookmark manager">
     <meta name="robots" content="index, follow" />
 
     <meta property="og:description" content="Gomark - A versatile bookmark manager">
-    <meta property="og:title" content="Gomark | Home" />
+    <meta property="og:title" content="Gomark" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="{{ .config.BaseURL }}" />
+    <meta property="og:url" content="" />
     <meta property="og:image" content="" />
 
-    <title>Gomark | Home</title>
+    <title>Gomark | All</title>
 
     <link rel="apple-touch-icon" sizes="57x57" href="assets/favicon/apple-icon-57x57.png">
     <link rel="apple-touch-icon" sizes="60x60" href="assets/favicon/apple-icon-60x60.png">
@@ -37,7 +37,7 @@
     <link rel="stylesheet" href="/css/app.min.css">
 </head>
 
-<body data-barba="wrapper">
+<body>
     <header>
         <div class="menu">
             <i class="material-icons">menu</i>
@@ -51,7 +51,7 @@
             <div class="bg"></div>
         </div>
     </header>
-    <main data-barba="container" data-barba-namespace="home">
+    <main>
         <div class="gomark_most_used">
             <h2>Most used bookmarks</h2>
         </div>
@@ -59,10 +59,8 @@
             <h2>Recent bookmarks</h2>
             {{ range .bookmarks }} {{ template "entity/bookmark" . }} {{ end }}
         </div>
-        <img
-            src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEAAQMAAABmvDolAAAABlBMVEX///8AAABVwtN+AAAB/klEQVR42uyZMZLkIAxFv4uAkCNwFG7Wtm/GUTgCIQHF35Kget21s8lELZeVeMp+CSPx9aXGE0888bvYSbLF3AMPAI4FCPKO9wIAbC2yIw5f0X3Zesjrgx3AkWeLmeTha4LngZDJYhAAyPLSLEmyjAKSLLyAdFtAaxJwNWo2EQd+KNpvB976UF6+Jtfi2f8jIF8MrEis8WxIHdj7T5r+3cC+lFmKrMmLeLiK4S9afQcArGnoI54tZNF0VyGiaApwzHtDEplglcdA4PZXH2wAHWn4Isc8PKn1GDK8McAxi8p1xEOqr2Hag8hbATsrXoh6s1hT9xyupq1dLKsNIE3/QL1gTQ+u/dUQsGoyIRS1B/N8V32wAEiyRB8mIFpNaawt3gxwzC9Putl59cunwbAAoAd1pE5PK0OQVCmvYm4BQOBAzJIzMs+aTJs1YPrP7OocSBGlv17N3C2AHUiHL0nXBiog71nIEuBkfEByVY2Da+rlro3VBDAHt9QDh2d2DZtog7/8HywAnI5U/mzaWNdwx1sBWH1oijnEq3bIEHRYAt6HCjyp9mfv4dMmWQDm8jDP6UeXH11dEE0Ba3moMhHyKrnxKSD3AVZidUcq98wiIDODbnqdbuAwrAFzeZjWDpEtzu0BbQFreehYNt3kqHqPf3/osQ088cQTn/EnAAD//+3mZ0fTolMCAAAAAElFTkSuQmCC">
     </main>
-    {{ template "footer/footer" }}
+    <footer></footer>
 </body>
 
 </html>

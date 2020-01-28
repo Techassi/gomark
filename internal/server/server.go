@@ -63,7 +63,7 @@ func (s *Server) Init(app *m.App) {
 	s.App = app
 }
 
-// Startup spins up the router, adds all routes and listens on the provided port.
+// Run spins up the router, adds all routes and listens on the provided port.
 // It panics when the router couldn't be started. Panics in the call chain
 // will recover, print a stack trace and the HTTPErrorHandler handles the panic.
 func (s *Server) Run() {
@@ -75,9 +75,11 @@ func (s *Server) Run() {
 
 	// Unprotected routes
 	s.Mux.GET("/login", handle.UILoginPage)
-	s.Mux.GET("/code", handle.UI2FACodePage)
 	s.Mux.GET("/register", handle.UIRegisterPage)
 	s.Mux.GET("/s/:hash", handle.UISharedBookmarkPage)
+
+	s.Mux.POST("/login", handle.AuthLogin)
+	s.Mux.POST("/register", handle.AuthRegister)
 
 	// Custom 404 error page
 	s.Mux.GET("/404", handle.UI404Page)
@@ -94,23 +96,24 @@ func (s *Server) Run() {
 	pr.Use(middleware.JWTWithConfig(middleware.JWTConfig{
 		SigningKey:              []byte(s.App.Config.Security.Jwt.Secret),
 		TokenLookup:             "cookie:Authorization",
-		ErrorHandlerWithContext: handle.AUTH_JWTError,
+		ErrorHandlerWithContext: handle.AuthJWTError,
 	}))
 
 	pr.GET("", handle.UIHomePage)
-	pr.GET("notes", handle.UINotesPage)
-	pr.GET("shared", handle.UISharedPage)
-	pr.GET("recent", handle.UIRecentBookmarksPage)
-	pr.GET("bookmarks", handle.UIBookmarksPage)
-	pr.GET("b/:hash", handle.UIBookmarkPage)
-	pr.GET("n/:hash", handle.UINotePage)
+	pr.GET("/code", handle.UI2FACodePage)
+	pr.GET("/notes", handle.UINotesPage)
+	pr.GET("/shared", handle.UISharedPage)
+	pr.GET("/recent", handle.UIRecentBookmarksPage)
+	pr.GET("/bookmarks", handle.UIBookmarksPage)
+	pr.GET("/b/:hash", handle.UIBookmarkPage)
+	pr.GET("/n/:hash", handle.UINotePage)
 
 	// API routes
 	api := s.Mux.Group("/api")
 	api.Use(middleware.JWTWithConfig(middleware.JWTConfig{
 		SigningKey:              []byte(s.App.Config.Security.Jwt.Secret),
 		TokenLookup:             "cookie:Authorization",
-		ErrorHandlerWithContext: handle.AUTH_JWTError,
+		ErrorHandlerWithContext: handle.AuthJWTError,
 	}))
 
 	// v1 API routes
@@ -130,9 +133,14 @@ func (s *Server) Run() {
 
 	// Auth routes
 	auth := s.Mux.Group("/auth")
-	auth.POST("/login", handle.AUTH_Login)
-	auth.POST("/code", handle.AUTH_2FACode)
-	auth.POST("/register", handle.AUTH_Register)
+	auth.Use(middleware.JWTWithConfig(middleware.JWTConfig{
+		SigningKey:              []byte(s.App.Config.Security.Jwt.Secret),
+		TokenLookup:             "cookie:Authorization",
+		ErrorHandlerWithContext: handle.AuthJWTError,
+	}))
+
+	auth.POST("/code", handle.Auth2FACode)
+	auth.POST("/code/create", handle.AuthCreate2FACode)
 
 	// Startup the router
 	port := fmt.Sprintf(":%s", strconv.Itoa(s.Port))
