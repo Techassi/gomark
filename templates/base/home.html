@@ -38,6 +38,35 @@
 </head>
 
 <body data-barba="wrapper">
+    <nav class="side">
+        <div class="bookmarks">
+            <ul>
+                <li>
+                    <a href="#">Home</a>
+                </li>
+                <li>
+                    <a href="recent">Recent</a>
+                </li>
+                <li>
+                    <a href="shared">Shared</a>
+                </li>
+                <li>
+                    <a href="notes">Notes</a>
+                </li>
+            </ul>
+        </div>
+        <div class="settings">
+            <ul>
+                <li>
+                    <a href="settings">Settings</a>
+                </li>
+                <li>
+                    <a href="admin">Administration</a>
+                </li>
+            </ul>
+        </div>
+        <div class="auth"></div>
+    </nav>
     <header>
         <div class="menu">
             <i class="material-icons">menu</i>
@@ -52,15 +81,21 @@
         </div>
     </header>
     <main data-barba="container" data-barba-namespace="home">
-        <div class="gomark_most_used">
-            <h2>Most used bookmarks</h2>
+        <div class="wrapper gomark_home">
+            <div class="wrapper gomark_most_used">
+                <h2>Most used bookmarks</h2>
+            </div>
+            <div class="wrapper gomark_recently_added">
+                <h2>Recent bookmarks</h2>
+                {{ range .bookmarks }} {{ template "entity/bookmark" . }} {{ end }}
+            </div>
         </div>
-        <div class="gomark_recently_added">
-            <h2>Recent bookmarks</h2>
-            {{ range .bookmarks }} {{ template "entity/bookmark" . }} {{ end }}
+        <div class="wrapper gomark_all">
+            <div class="gomark_folders"></div>
+            <div class="gomark_bookmarks">
+                {{ range .bookmarks }} {{ template "entity/bookmark" . }} {{ end }}
+            </div>
         </div>
-        <img
-            src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAAEAAQMAAABmvDolAAAABlBMVEX///8AAABVwtN+AAAB/klEQVR42uyZMZLkIAxFv4uAkCNwFG7Wtm/GUTgCIQHF35Kget21s8lELZeVeMp+CSPx9aXGE0888bvYSbLF3AMPAI4FCPKO9wIAbC2yIw5f0X3Zesjrgx3AkWeLmeTha4LngZDJYhAAyPLSLEmyjAKSLLyAdFtAaxJwNWo2EQd+KNpvB976UF6+Jtfi2f8jIF8MrEis8WxIHdj7T5r+3cC+lFmKrMmLeLiK4S9afQcArGnoI54tZNF0VyGiaApwzHtDEplglcdA4PZXH2wAHWn4Isc8PKn1GDK8McAxi8p1xEOqr2Hag8hbATsrXoh6s1hT9xyupq1dLKsNIE3/QL1gTQ+u/dUQsGoyIRS1B/N8V32wAEiyRB8mIFpNaawt3gxwzC9Putl59cunwbAAoAd1pE5PK0OQVCmvYm4BQOBAzJIzMs+aTJs1YPrP7OocSBGlv17N3C2AHUiHL0nXBiog71nIEuBkfEByVY2Da+rlro3VBDAHt9QDh2d2DZtog7/8HywAnI5U/mzaWNdwx1sBWH1oijnEq3bIEHRYAt6HCjyp9mfv4dMmWQDm8jDP6UeXH11dEE0Ba3moMhHyKrnxKSD3AVZidUcq98wiIDODbnqdbuAwrAFzeZjWDpEtzu0BbQFreehYNt3kqHqPf3/osQ088cQTn/EnAAD//+3mZ0fTolMCAAAAAElFTkSuQmCC">
     </main>
     {{ template "footer/footer" }}
 </body>

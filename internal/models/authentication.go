@@ -147,7 +147,14 @@ func (a *Authentication) Create2FACode(userID uint, username string) (string, er
 	otpURI.RawQuery = params.Encode()
 
 	// Create QR Code
-	qr, err := qrcode.Encode(otpURI.String(), qrcode.Medium, 256)
+	qr, err := qrcode.New(otpURI.String(), qrcode.Medium)
+	if err != nil {
+		return "", err
+	}
+
+	// Diable border and create byte array
+	qr.DisableBorder = true
+	code, err := qr.PNG(256)
 	if err != nil {
 		return "", err
 	}
@@ -157,7 +164,7 @@ func (a *Authentication) Create2FACode(userID uint, username string) (string, er
 	if err != nil {
 		return "", err
 	}
-	return base64.StdEncoding.EncodeToString(qr), nil
+	return base64.StdEncoding.EncodeToString(code), nil
 }
 
 ////////////////////////////////////////////////////////////////////////////////

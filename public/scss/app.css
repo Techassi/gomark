@@ -102,11 +102,33 @@ span {
   font-style: normal;
 }
 
-nav.top {
+nav.side {
   position: fixed;
-  width: 100%;
-  height: auto;
-  padding: 20px 0 10px 0;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 80vw;
+  z-index: 10;
+  background-color: #212121;
+  opacity: 0;
+  -webkit-transform: translateX(-100%);
+          transform: translateX(-100%);
+}
+
+nav.side::after {
+  position: absolute;
+  height: 100%;
+  width: 20vw;
+  top: 0;
+  left: 100%;
+  background-color: #000000;
+  opacity: 0.8;
+}
+
+nav.side.open {
+  opacity: 1;
+  -webkit-transform: translateX(0%);
+          transform: translateX(0%);
 }
 
 header {
@@ -194,12 +216,7 @@ main h2 {
   margin: 10px 0 0 0;
 }
 
-main .gomark_most_used {
-  width: 100%;
-  height: auto;
-}
-
-main .gomark_recently_added {
+main .wrapper {
   width: 100%;
   height: auto;
   display: -webkit-box;

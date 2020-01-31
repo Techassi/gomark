@@ -15,8 +15,8 @@ import (
 /////////////////////////////// ENTITY FUNCTIONS ///////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// APIGetSubEntities gets all sub entities from a parent folder
-func APIGetSubEntities(c echo.Context) error {
+// API_GetSubEntities gets all sub entities from a parent folder
+func API_GetSubEntities(c echo.Context) error {
 	app := c.Get("app").(*m.App)
 
 	user := c.Get("user")
@@ -34,8 +34,8 @@ func APIGetSubEntities(c echo.Context) error {
 	})
 }
 
-// APIPostEntityToFolder saves any type of entity to a folder
-func APIPostEntityToFolder(c echo.Context) error {
+// API_PostEntityToFolder saves any type of entity to a folder
+func API_PostEntityToFolder(c echo.Context) error {
 	app := c.Get("app").(*m.App)
 
 	user := c.Get("user")
@@ -103,15 +103,15 @@ func APIPostEntityToFolder(c echo.Context) error {
 ////////////////////////////// BOOKMARK FUNCTIONS //////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// APIGetRecentBookmarks gets recent bookmarks
-func APIGetRecentBookmarks(c echo.Context) error {
+// API_GetRecentBookmarks gets recent bookmarks
+func API_GetRecentBookmarks(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"status": http.StatusOK,
 	})
 }
 
-// APIGetBookmarks gets all bookmarks
-func APIGetBookmarks(c echo.Context) error {
+// API_GetBookmarks gets all bookmarks
+func API_GetBookmarks(c echo.Context) error {
 	app := c.Get("app").(*m.App)
 
 	user := c.Get("user")
@@ -129,22 +129,22 @@ func APIGetBookmarks(c echo.Context) error {
 	})
 }
 
-// APIGetBookmark gets a single bookmark matching the hash
-func APIGetBookmark(c echo.Context) error {
+// API_GetBookmark gets a single bookmark matching the hash
+func API_GetBookmark(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"status": http.StatusOK,
 	})
 }
 
-// APIGetBookmarkTags gets tags attached to a single bookmark
-func APIGetBookmarkTags(c echo.Context) error {
+// API_GetBookmarkTags gets tags attached to a single bookmark
+func API_GetBookmarkTags(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"status": http.StatusOK,
 	})
 }
 
-// APIPostBookmark saves a bookmark
-func APIPostBookmark(c echo.Context) error {
+// API_PostBookmark saves a bookmark
+func API_PostBookmark(c echo.Context) error {
 	app := c.Get("app").(*m.App)
 
 	user := c.Get("user")
@@ -178,13 +178,13 @@ func APIPostBookmark(c echo.Context) error {
 	return c.JSON(http.StatusOK, status.API_GeneralSuccess())
 }
 
-// APIUpdateBookmark updates a bookmark
-func APIUpdateBookmark(c echo.Context) error {
+// API_UpdateBookmark updates a bookmark
+func API_UpdateBookmark(c echo.Context) error {
 	return nil
 }
 
-// APIPostBookmarkTags saves one or more tags to a bookmark
-func APIPostBookmarkTags(c echo.Context) error {
+// API_PostBookmarkTags saves one or more tags to a bookmark
+func API_PostBookmarkTags(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"status": http.StatusOK,
 	})
@@ -194,8 +194,8 @@ func APIPostBookmarkTags(c echo.Context) error {
 /////////////////////////////// FOLDER FUNCTIONS ///////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// APIGetFolders gets all folders
-func APIGetFolders(c echo.Context) error {
+// API_GetFolders gets all folders
+func API_GetFolders(c echo.Context) error {
 	app := c.Get("app").(*m.App)
 
 	user := c.Get("user")
@@ -213,8 +213,8 @@ func APIGetFolders(c echo.Context) error {
 	})
 }
 
-// APIGetSubFolders gets all subfolders from a parent folder
-func APIGetSubFolders(c echo.Context) error {
+// API_GetSubFolders gets all subfolders from a parent folder
+func API_GetSubFolders(c echo.Context) error {
 	app := c.Get("app").(*m.App)
 
 	user := c.Get("user")
@@ -232,8 +232,8 @@ func APIGetSubFolders(c echo.Context) error {
 	})
 }
 
-// APIPostFolder saves a folder
-func APIPostFolder(c echo.Context) error {
+// API_PostFolder saves a folder
+func API_PostFolder(c echo.Context) error {
 	app := c.Get("app").(*m.App)
 
 	user := c.Get("user")

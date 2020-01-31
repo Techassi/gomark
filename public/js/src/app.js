@@ -6,6 +6,7 @@ import barba from "@barba/core";
 import Hammer from "hammerjs/hammer.js";
 
 import Login from "./namespaces/login";
+import Home from "./namespaces/home";
 
 /////////////////////////////////////////////
 ////////////////// GENERAL //////////////////
@@ -21,6 +22,7 @@ console.info(
 /////////////////////////////////////////////
 
 let login = new Login();
+let home = new Home();
 
 /////////////////////////////////////////////
 /////////////////// BARBA ///////////////////
@@ -66,6 +68,17 @@ barba.init({
             afterEnter() {},
             beforeLeave() {
                 login.Kill();
+            }
+        },
+        {
+            namespace: "home",
+            beforeEnter(data) {
+                console.log(data);
+                home.Init(data);
+            },
+            afterEnter() {},
+            beforeLeave() {
+                home.Kill();
             }
         }
     ]

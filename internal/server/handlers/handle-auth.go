@@ -15,9 +15,9 @@ import (
 /////////////////////////////// GENERAL FUNCTIONS //////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// AuthJWTError handles the redirect to the login page if no JWT token is
+// AUTH_JWTError handles the redirect to the login page if no JWT token is
 // present
-func AuthJWTError(e error, c echo.Context) error {
+func AUTH_JWTError(e error, c echo.Context) error {
 	return c.Redirect(http.StatusMovedPermanently, "/login")
 }
 
@@ -25,8 +25,8 @@ func AuthJWTError(e error, c echo.Context) error {
 ////////////////////////////// REGISTER FUNCTIONS //////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// AuthRegister handles the register process of a new user
-func AuthRegister(c echo.Context) error {
+// AUTH_Register handles the register process of a new user
+func AUTH_Register(c echo.Context) error {
 	// Initiate Authentication
 	auth := &m.Authentication{}
 	auth.Init("register", c)
@@ -61,8 +61,8 @@ func AuthRegister(c echo.Context) error {
 //////////////////////////////// LOGIN FUNCTIONS ///////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// AuthLogin handles the user authentication via the DB to login the user
-func AuthLogin(c echo.Context) error {
+// AUTH_Login handles the user authentication via the DB to login the user
+func AUTH_Login(c echo.Context) error {
 	// Initiate Authentication
 	auth := &m.Authentication{}
 	auth.Init("login", c)
@@ -107,8 +107,8 @@ func JWTLoginFlow(auth *m.Authentication) error {
 ///////////////////////////////// 2FA FUNCTIONS ////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// Auth2FACode handles the 2FA code validation
-func AuthCreate2FACode(c echo.Context) error {
+// AUTH_Create2FACode handles the 2FA code validation
+func AUTH_Create2FACode(c echo.Context) error {
 	// Initiate Authentication
 	auth := &m.Authentication{}
 	auth.Init("2fa", c)
@@ -134,8 +134,8 @@ func AuthCreate2FACode(c echo.Context) error {
 	})
 }
 
-// Auth2FACode handles the 2FA code validation
-func Auth2FACode(c echo.Context) error {
+// AUTH_2FACode handles the 2FA code validation
+func AUTH_2FACode(c echo.Context) error {
 	// Initiate Authentication
 	auth := &m.Authentication{}
 	auth.Init("2fa", c)

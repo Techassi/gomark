@@ -74,15 +74,15 @@ func (s *Server) Run() {
 	s.Mux.Static("/font", util.GetAbsPath("public/assets/fonts"))
 
 	// Unprotected routes
-	s.Mux.GET("/login", handle.UILoginPage)
-	s.Mux.GET("/register", handle.UIRegisterPage)
-	s.Mux.GET("/s/:hash", handle.UISharedBookmarkPage)
+	s.Mux.GET("/login", handle.UI_LoginPage)
+	s.Mux.GET("/register", handle.UI_RegisterPage)
+	s.Mux.GET("/s/:hash", handle.UI_SharedBookmarkPage)
 
-	s.Mux.POST("/login", handle.AuthLogin)
-	s.Mux.POST("/register", handle.AuthRegister)
+	s.Mux.POST("/login", handle.AUTH_Login)
+	s.Mux.POST("/register", handle.AUTH_Register)
 
 	// Custom 404 error page
-	s.Mux.GET("/404", handle.UI404Page)
+	s.Mux.GET("/404", handle.UI_404Page)
 
 	s.Mux.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -91,56 +91,51 @@ func (s *Server) Run() {
 		}
 	})
 
-	// Protected routes
-	pr := s.Mux.Group("/")
-	pr.Use(middleware.JWTWithConfig(middleware.JWTConfig{
+	// Configure the JWT setting to use in the middleware
+	jwtConfig := middleware.JWTConfig{
 		SigningKey:              []byte(s.App.Config.Security.Jwt.Secret),
 		TokenLookup:             "cookie:Authorization",
-		ErrorHandlerWithContext: handle.AuthJWTError,
-	}))
+		ErrorHandlerWithContext: handle.AUTH_JWTError,
+	}
 
-	pr.GET("", handle.UIHomePage)
-	pr.GET("/code", handle.UI2FACodePage)
-	pr.GET("/notes", handle.UINotesPage)
-	pr.GET("/shared", handle.UISharedPage)
-	pr.GET("/recent", handle.UIRecentBookmarksPage)
-	pr.GET("/bookmarks", handle.UIBookmarksPage)
-	pr.GET("/b/:hash", handle.UIBookmarkPage)
-	pr.GET("/n/:hash", handle.UINotePage)
+	// Protected routes
+	pr := s.Mux.Group("/")
+	pr.Use(middleware.JWTWithConfig(jwtConfig))
+
+	pr.GET("", handle.UI_HomePage)
+	pr.GET("/code", handle.UI_2FACodePage)
+	pr.GET("/notes", handle.UI_NotesPage)
+	pr.GET("/shared", handle.UI_SharedPage)
+	pr.GET("/recent", handle.UI_RecentBookmarksPage)
+	pr.GET("/bookmarks", handle.UI_BookmarksPage)
+	pr.GET("/b/:hash", handle.UI_BookmarkPage)
+	pr.GET("/n/:hash", handle.UI_NotePage)
 
 	// API routes
 	api := s.Mux.Group("/api")
-	api.Use(middleware.JWTWithConfig(middleware.JWTConfig{
-		SigningKey:              []byte(s.App.Config.Security.Jwt.Secret),
-		TokenLookup:             "cookie:Authorization",
-		ErrorHandlerWithContext: handle.AuthJWTError,
-	}))
+	api.Use(middleware.JWTWithConfig(jwtConfig))
 
 	// v1 API routes
 	v1 := api.Group("/v1")
-	v1.GET("/recent", handle.APIGetRecentBookmarks)
-	v1.GET("/bookmarks", handle.APIGetBookmarks)
-	v1.GET("/bookmarks/:hash", handle.APIGetBookmark)
-	v1.GET("/bookmarks/:hash/tags", handle.APIGetBookmarkTags)
-	v1.GET("/folders", handle.APIGetFolders)
-	v1.GET("/folders/:hash", handle.APIGetSubFolders)
+	v1.GET("/recent", handle.API_GetRecentBookmarks)
+	v1.GET("/bookmarks", handle.API_GetBookmarks)
+	v1.GET("/bookmarks/:hash", handle.API_GetBookmark)
+	v1.GET("/bookmarks/:hash/tags", handle.API_GetBookmarkTags)
+	v1.GET("/folders", handle.API_GetFolders)
+	v1.GET("/folders/:hash", handle.API_GetSubFolders)
 
-	v1.POST("/bookmark", handle.APIPostBookmark)
-	v1.POST("/bookmark/:hash", handle.APIUpdateBookmark)
-	v1.POST("/bookmark/:hash/tags", handle.APIPostBookmarkTags)
-	v1.POST("/folder", handle.APIPostFolder)
-	v1.POST("/folder/:hash", handle.APIPostEntityToFolder)
+	v1.POST("/bookmark", handle.API_PostBookmark)
+	v1.POST("/bookmark/:hash", handle.API_UpdateBookmark)
+	v1.POST("/bookmark/:hash/tags", handle.API_PostBookmarkTags)
+	v1.POST("/folder", handle.API_PostFolder)
+	v1.POST("/folder/:hash", handle.API_PostEntityToFolder)
 
 	// Auth routes
 	auth := s.Mux.Group("/auth")
-	auth.Use(middleware.JWTWithConfig(middleware.JWTConfig{
-		SigningKey:              []byte(s.App.Config.Security.Jwt.Secret),
-		TokenLookup:             "cookie:Authorization",
-		ErrorHandlerWithContext: handle.AuthJWTError,
-	}))
+	auth.Use(middleware.JWTWithConfig(jwtConfig))
 
-	auth.POST("/code", handle.Auth2FACode)
-	auth.POST("/code/create", handle.AuthCreate2FACode)
+	auth.POST("/code", handle.AUTH_2FACode)
+	auth.POST("/code/create", handle.AUTH_Create2FACode)
 
 	// Startup the router
 	port := fmt.Sprintf(":%s", strconv.Itoa(s.Port))
