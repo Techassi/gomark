@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	m "github.com/Techassi/gomark/internal/models"
+	"github.com/Techassi/gomark/internal/app"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
@@ -22,7 +22,7 @@ func UI_2FACodePage(c echo.Context) error {
 }
 
 func UI_RegisterPage(c echo.Context) error {
-	app := c.Get("app").(*m.App)
+	app := c.Get("app").(*app.App)
 
 	if !app.RegisterEnabled() {
 		return c.Redirect(http.StatusMovedPermanently, "/login")
@@ -77,7 +77,7 @@ func UI_NotesPage(c echo.Context) error {
 
 // UI_HomePage renders the home page
 func UI_HomePage(c echo.Context) error {
-	app := c.Get("app").(*m.App)
+	app := c.Get("app").(*app.App)
 
 	user := c.Get("user")
 	if user == nil {

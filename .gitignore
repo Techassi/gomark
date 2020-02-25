@@ -2,3 +2,5 @@
 public/js/node_modules/*
 config-custom.json
 public/2fa/*
+.cobra.yaml
+gomark

@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/Techassi/gomark/internal/app"
 	m "github.com/Techassi/gomark/internal/models"
 	"github.com/Techassi/gomark/internal/server/status"
 	"github.com/Techassi/gomark/internal/util"
@@ -17,7 +18,7 @@ import (
 
 // API_GetSubEntities gets all sub entities from a parent folder
 func API_GetSubEntities(c echo.Context) error {
-	app := c.Get("app").(*m.App)
+	app := c.Get("app").(*app.App)
 
 	user := c.Get("user")
 	if user == nil {
@@ -36,7 +37,7 @@ func API_GetSubEntities(c echo.Context) error {
 
 // API_PostEntityToFolder saves any type of entity to a folder
 func API_PostEntityToFolder(c echo.Context) error {
-	app := c.Get("app").(*m.App)
+	app := c.Get("app").(*app.App)
 
 	user := c.Get("user")
 	if user == nil {
@@ -112,7 +113,7 @@ func API_GetRecentBookmarks(c echo.Context) error {
 
 // API_GetBookmarks gets all bookmarks
 func API_GetBookmarks(c echo.Context) error {
-	app := c.Get("app").(*m.App)
+	app := c.Get("app").(*app.App)
 
 	user := c.Get("user")
 	if user == nil {
@@ -145,7 +146,7 @@ func API_GetBookmarkTags(c echo.Context) error {
 
 // API_PostBookmark saves a bookmark
 func API_PostBookmark(c echo.Context) error {
-	app := c.Get("app").(*m.App)
+	app := c.Get("app").(*app.App)
 
 	user := c.Get("user")
 	if user == nil {
@@ -196,7 +197,7 @@ func API_PostBookmarkTags(c echo.Context) error {
 
 // API_GetFolders gets all folders
 func API_GetFolders(c echo.Context) error {
-	app := c.Get("app").(*m.App)
+	app := c.Get("app").(*app.App)
 
 	user := c.Get("user")
 	if user == nil {
@@ -215,7 +216,7 @@ func API_GetFolders(c echo.Context) error {
 
 // API_GetSubFolders gets all subfolders from a parent folder
 func API_GetSubFolders(c echo.Context) error {
-	app := c.Get("app").(*m.App)
+	app := c.Get("app").(*app.App)
 
 	user := c.Get("user")
 	if user == nil {
@@ -234,7 +235,7 @@ func API_GetSubFolders(c echo.Context) error {
 
 // API_PostFolder saves a folder
 func API_PostFolder(c echo.Context) error {
-	app := c.Get("app").(*m.App)
+	app := c.Get("app").(*app.App)
 
 	user := c.Get("user")
 	if user == nil {

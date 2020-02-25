@@ -1,4 +1,4 @@
-package models
+package authentication
 
 import (
 	"encoding/base64"
@@ -7,7 +7,9 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/Techassi/gomark/internal/app"
 	"github.com/Techassi/gomark/internal/constants"
+	m "github.com/Techassi/gomark/internal/models"
 	"github.com/Techassi/gomark/internal/server/status"
 	"github.com/Techassi/gomark/internal/util"
 
@@ -17,12 +19,12 @@ import (
 	qrcode "github.com/skip2/go-qrcode"
 )
 
-// Authentication handles all authentication routines within the app
-type Authentication struct {
+// Authenticator handles all authentication routines within the app
+type Authenticator struct {
 	Type    string
-	User    *User
+	User    *m.User
 	Context echo.Context
-	App     *App
+	App     *app.App
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -30,25 +32,25 @@ type Authentication struct {
 ////////////////////////////////////////////////////////////////////////////////
 
 // Init initiates the authentication struct
-func (a *Authentication) Init(t string, c echo.Context) {
+func (a *Authenticator) Init(t string, c echo.Context) {
 	a.Type = t
 	a.Context = c
-	a.App = c.Get("app").(*App)
+	a.App = c.Get("app").(*app.App)
 }
 
 // SetUser sets the user in the authentication struct
-func (a *Authentication) SetUser(u *User) {
+func (a *Authenticator) SetUser(u *m.User) {
 	a.User = u
 }
 
 // ValidateCredentials validates if the provided username and password are correct
-func (a *Authentication) ValidateCredentials(u, p string) (bool, User) {
+func (a *Authenticator) ValidateCredentials(u, p string) (bool, m.User) {
 	return a.App.DB.ValidateCredentials(u, p)
 }
 
 // ValidateNewCredentials validates if the provided username and password are ready
 // to be used for a new user
-func (a *Authentication) ValidateNewCredentials(u, p string) bool {
+func (a *Authenticator) ValidateNewCredentials(u, p string) bool {
 	return a.App.DB.ValidateNewCredentials(u, p)
 }
 
@@ -58,7 +60,7 @@ func (a *Authentication) ValidateNewCredentials(u, p string) bool {
 
 // TODO: Add error handling
 // Register handles the registration process
-func (a *Authentication) Register(user, pass, last, first, mail string) error {
+func (a *Authenticator) Register(user, pass, last, first, mail string) error {
 	return a.App.DB.Register(user, pass, last, first, mail)
 }
 
@@ -67,13 +69,13 @@ func (a *Authentication) Register(user, pass, last, first, mail string) error {
 ////////////////////////////////////////////////////////////////////////////////
 
 // Uses2FA returns if a user uses 2FA
-func (a *Authentication) Uses2FA() bool {
+func (a *Authenticator) Uses2FA() bool {
 	return a.User.TwoFA
 }
 
 // SetTemp2FAToken sets a temporary 2FA token to validate if the user can access
 // the 2FA code page
-func (a *Authentication) SetTemp2FAToken() map[string]interface{} {
+func (a *Authenticator) SetTemp2FAToken() map[string]interface{} {
 	expirationTime := time.Now().Add(time.Minute * 5)
 	temp2FAToken, temp2FATokenErr := util.RandomCryptoString(10)
 	if temp2FATokenErr != nil {
@@ -94,7 +96,7 @@ func (a *Authentication) SetTemp2FAToken() map[string]interface{} {
 // CheckTemp2FAToken checks if the TempTwoFAToken cookie is set to validate if
 // the user can access this page. If valid the user gets set in the authentication
 // struct
-func (a *Authentication) CheckTemp2FAToken() map[string]interface{} {
+func (a *Authenticator) CheckTemp2FAToken() map[string]interface{} {
 	tempToken, tempTokenErr := a.Context.Cookie("TempTwoFAToken")
 	if tempTokenErr != nil {
 		return status.AUTH_2FATempTokenError()
@@ -108,7 +110,7 @@ func (a *Authentication) CheckTemp2FAToken() map[string]interface{} {
 }
 
 // Validate2FACode checks if the provided 2FA code is valid
-func (a *Authentication) Validate2FACode() bool {
+func (a *Authenticator) Validate2FACode() bool {
 	// Set up OTPConfig
 	otpc := &dgoogauth.OTPConfig{
 		Secret:      a.User.TwoFAKey,
@@ -127,7 +129,7 @@ func (a *Authentication) Validate2FACode() bool {
 	return true
 }
 
-func (a *Authentication) Create2FACode(userID uint, username string) (string, error) {
+func (a *Authenticator) Create2FACode(userID uint, username string) (string, error) {
 	// Create 2FA secret
 	twoFASecretBase32, err := util.RandomCryptoString(10)
 	if err != nil {
@@ -172,7 +174,7 @@ func (a *Authentication) Create2FACode(userID uint, username string) (string, er
 ////////////////////////////////////////////////////////////////////////////////
 
 // SetJWTToken creates and sets a JWT token
-func (a *Authentication) SetJWTToken() map[string]interface{} {
+func (a *Authenticator) SetJWTToken() map[string]interface{} {
 	// Create a new JWT token and get the current time + 24 hours to set the
 	// expiration time
 	token := jwt.New(jwt.SigningMethodHS256)

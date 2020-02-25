@@ -17,3 +17,7 @@ Web-based bookmark manager written in GO. CURRENTLY IN DEVELOPMENT (NOT FEATURE-
 -   Management of Bookmarks, Notes and Folders
 -   User Management
 -   Sharing of Bookmarks, Notes and Folders
+
+## Todo
+
+-   Remove Temp2FAToken from DB after login

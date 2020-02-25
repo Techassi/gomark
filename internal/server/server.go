@@ -6,7 +6,7 @@ import (
 	"io"
 	"strconv"
 
-	m "github.com/Techassi/gomark/internal/models"
+	"github.com/Techassi/gomark/internal/app"
 	handle "github.com/Techassi/gomark/internal/server/handlers"
 	tpl "github.com/Techassi/gomark/internal/server/templating"
 	"github.com/Techassi/gomark/internal/util"
@@ -19,11 +19,11 @@ import (
 type Server struct {
 	Port int
 	Mux  *echo.Echo
-	App  *m.App
+	App  *app.App
 }
 
 // New initiates a new Server instance and returns it.
-func New(app *m.App) *Server {
+func New(app *app.App) *Server {
 	s := &Server{}
 	s.Init(app)
 
@@ -31,7 +31,7 @@ func New(app *m.App) *Server {
 }
 
 // Init sets up some basic parameters of the provided Server instance.
-func (s *Server) Init(app *m.App) {
+func (s *Server) Init(app *app.App) {
 	s.Port = app.Config.Server.Port
 	s.Mux = echo.New()
 
@@ -74,12 +74,13 @@ func (s *Server) Run() {
 	s.Mux.Static("/font", util.GetAbsPath("public/assets/fonts"))
 
 	// Unprotected routes
+	s.Mux.GET("/code", handle.UI_2FACodePage)
 	s.Mux.GET("/login", handle.UI_LoginPage)
 	s.Mux.GET("/register", handle.UI_RegisterPage)
 	s.Mux.GET("/s/:hash", handle.UI_SharedBookmarkPage)
 
-	s.Mux.POST("/login", handle.AUTH_Login)
-	s.Mux.POST("/register", handle.AUTH_Register)
+	s.Mux.POST("/auth/login", handle.AUTH_Login)
+	s.Mux.POST("/auth/register", handle.AUTH_Register)
 
 	// Custom 404 error page
 	s.Mux.GET("/404", handle.UI_404Page)
@@ -103,7 +104,6 @@ func (s *Server) Run() {
 	pr.Use(middleware.JWTWithConfig(jwtConfig))
 
 	pr.GET("", handle.UI_HomePage)
-	pr.GET("/code", handle.UI_2FACodePage)
 	pr.GET("/notes", handle.UI_NotesPage)
 	pr.GET("/shared", handle.UI_SharedPage)
 	pr.GET("/recent", handle.UI_RecentBookmarksPage)

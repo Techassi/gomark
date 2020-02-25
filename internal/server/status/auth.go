@@ -15,8 +15,8 @@ func AUTH_InvalidCredentials() map[string]interface{} {
 	return map[string]interface{}{
 		"status":  http.StatusUnauthorized,
 		"scope":   "auth",
-		"error":   "invalid_credentials",
-		"message": "Your credentials are invalid.",
+		"message": "invalid_credentials",
+		"detail":  "Your credentials are invalid.",
 	}
 }
 
@@ -26,8 +26,8 @@ func AUTH_InvalidNewCredentials() map[string]interface{} {
 	return map[string]interface{}{
 		"status":  http.StatusUnauthorized,
 		"scope":   "auth",
-		"error":   "invalid_new_credentials",
-		"message": "Your new credentials are invalid.",
+		"message": "invalid_new_credentials",
+		"detail":  "Your new credentials are invalid.",
 	}
 }
 
@@ -41,8 +41,8 @@ func AUTH_SuccessfullySignedIn() map[string]interface{} {
 	return map[string]interface{}{
 		"status":  http.StatusOK,
 		"scope":   "auth",
-		"error":   "null",
-		"message": "You are successfully signed in.",
+		"message": "null",
+		"detail":  "You are successfully signed in.",
 	}
 }
 
@@ -52,8 +52,8 @@ func AUTH_AlreadySignedIn() map[string]interface{} {
 	return map[string]interface{}{
 		"status":  http.StatusOK,
 		"scope":   "auth",
-		"error":   "already_signed_in",
-		"message": "You are already signed in.",
+		"message": "already_signed_in",
+		"detail":  "You are already signed in.",
 	}
 }
 
@@ -67,8 +67,8 @@ func AUTH_SuccessfullyRegistered() map[string]interface{} {
 	return map[string]interface{}{
 		"status":  http.StatusOK,
 		"scope":   "auth",
-		"error":   "null",
-		"message": "You are successfully registered.",
+		"message": "null",
+		"detail":  "You are successfully registered.",
 	}
 }
 
@@ -78,8 +78,21 @@ func AUTH_NotRegistered() map[string]interface{} {
 	return map[string]interface{}{
 		"status":  http.StatusInternalServerError,
 		"scope":   "auth",
-		"error":   "not_registered",
-		"message": "The server encountered an internal error, please try again.",
+		"message": "not_registered",
+		"detail":  "The server encountered an internal error, please try again.",
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////// 2FA STATUS /////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+func AUTH_2FARequired() map[string]interface{} {
+	return map[string]interface{}{
+		"status":  http.StatusOK,
+		"scope":   "auth",
+		"message": "2fa_required",
+		"detail":  "A 2FA Code is required to login.",
 	}
 }
 
@@ -93,8 +106,8 @@ func AUTH_2FASecretError() map[string]interface{} {
 	return map[string]interface{}{
 		"status":  http.StatusInternalServerError,
 		"scope":   "auth",
-		"error":   "2fa_secret_error",
-		"message": "The 2FA secret could not be created.",
+		"message": "2fa_secret_error",
+		"detail":  "The 2FA secret could not be created.",
 	}
 }
 
@@ -106,8 +119,8 @@ func AUTH_2FAUriError() map[string]interface{} {
 	return map[string]interface{}{
 		"status":  http.StatusInternalServerError,
 		"scope":   "auth",
-		"error":   "2fa_uri_error",
-		"message": "The 2FA uri could not be created.",
+		"message": "2fa_uri_error",
+		"detail":  "The 2FA uri could not be created.",
 	}
 }
 
@@ -117,8 +130,8 @@ func AUTH_2FAQRCodeError() map[string]interface{} {
 	return map[string]interface{}{
 		"status":  http.StatusInternalServerError,
 		"scope":   "auth",
-		"error":   "2fa_qr_code_error",
-		"message": "The 2FA QR code could not be generated.",
+		"message": "2fa_qr_code_error",
+		"detail":  "The 2FA QR code could not be generated.",
 	}
 }
 
@@ -128,8 +141,8 @@ func AUTH_2FATempTokenCreateError() map[string]interface{} {
 	return map[string]interface{}{
 		"status":  http.StatusInternalServerError,
 		"scope":   "auth",
-		"error":   "2fa_temp_token_creation_error",
-		"message": "The 2FA temp token could not be created.",
+		"message": "2fa_temp_token_creation_error",
+		"detail":  "The 2FA temp token could not be created.",
 	}
 }
 
@@ -137,8 +150,8 @@ func AUTH_2FATempTokenError() map[string]interface{} {
 	return map[string]interface{}{
 		"status":  http.StatusUnauthorized,
 		"scope":   "auth",
-		"error":   "2fa_temp_token_error",
-		"message": "The 2FA temp token is not set or invalid.",
+		"message": "2fa_temp_token_error",
+		"detail":  "The 2FA temp token is not set or invalid.",
 	}
 }
 
@@ -146,8 +159,8 @@ func AUTH_2FAAuthenticationError() map[string]interface{} {
 	return map[string]interface{}{
 		"status":  http.StatusUnauthorized,
 		"scope":   "auth",
-		"error":   "2fa_authentication_error",
-		"message": "The 2FA code is invalid.",
+		"message": "2fa_authentication_error",
+		"detail":  "The 2FA code is invalid.",
 	}
 }
 
@@ -159,8 +172,8 @@ func AUTH_JWTTokenSigningError(e error) map[string]interface{} {
 	return map[string]interface{}{
 		"status":  http.StatusInternalServerError,
 		"scope":   "auth",
-		"error":   "jwt_token_signing_error",
-		"message": "The JWT token could not be signed.",
+		"message": "jwt_token_signing_error",
+		"detail":  "The JWT token could not be signed.",
 		"details": e,
 	}
 }

@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	m "github.com/Techassi/gomark/internal/models"
+	auth "github.com/Techassi/gomark/internal/authentication"
 	"github.com/Techassi/gomark/internal/server/status"
 	"github.com/dgrijalva/jwt-go"
 
@@ -28,10 +28,10 @@ func AUTH_JWTError(e error, c echo.Context) error {
 // AUTH_Register handles the register process of a new user
 func AUTH_Register(c echo.Context) error {
 	// Initiate Authentication
-	auth := &m.Authentication{}
-	auth.Init("register", c)
+	a := &auth.Authenticator{}
+	a.Init("register", c)
 
-	if !auth.App.RegisterEnabled() {
+	if !a.App.RegisterEnabled() {
 		return c.JSON(200, status.ADMIN_RegisterDisabled())
 	}
 
@@ -45,12 +45,12 @@ func AUTH_Register(c echo.Context) error {
 
 	// Check if username and password are valid (username is not used already
 	// and password checks all requirements)
-	if !auth.ValidateNewCredentials(username, password) {
+	if !a.ValidateNewCredentials(username, password) {
 		return c.JSON(200, status.AUTH_InvalidNewCredentials())
 	}
 
 	// Register the new account
-	err := auth.Register(username, password, lastname, firstname, email)
+	err := a.Register(username, password, lastname, firstname, email)
 	if err != nil {
 		return c.JSON(http.StatusOK, status.AUTH_NotRegistered)
 	}
@@ -64,43 +64,42 @@ func AUTH_Register(c echo.Context) error {
 // AUTH_Login handles the user authentication via the DB to login the user
 func AUTH_Login(c echo.Context) error {
 	// Initiate Authentication
-	auth := &m.Authentication{}
-	auth.Init("login", c)
+	a := &auth.Authenticator{}
+	a.Init("login", c)
 
 	// Extract the provided user information
 	username := c.FormValue("username")
 	password := c.FormValue("password")
 
 	// Check if the provided credentials are valid
-	valid, user := auth.ValidateCredentials(username, password)
+	valid, user := a.ValidateCredentials(username, password)
 	if !valid {
 		return c.JSON(200, status.AUTH_InvalidCredentials())
 	}
 
-	auth.SetUser(&user)
+	a.SetUser(&user)
 
 	// Check if the user has 2FA activated, if yes proceed to 2FA code authentication.
 	// If not continue with JWT authentication
-	if auth.Uses2FA() {
+	if a.Uses2FA() {
 		// Set temporary token to validate the user can access the 2FA code page
-		if err := auth.SetTemp2FAToken(); err != nil {
+		if err := a.SetTemp2FAToken(); err != nil {
 			return c.JSON(200, err)
 		}
 
-		// Redirect to code page
-		return c.Redirect(http.StatusMovedPermanently, "/code")
+		return c.JSON(200, status.AUTH_2FARequired())
 	}
 
 	// Continue with the JWT login flow
-	return JWTLoginFlow(auth)
+	return JWTLoginFlow(a)
 }
 
-func JWTLoginFlow(auth *m.Authentication) error {
+func JWTLoginFlow(a *auth.Authenticator) error {
 	// Set JWT token
-	if err := auth.SetJWTToken(); err != nil {
-		return auth.Context.JSON(200, err)
+	if err := a.SetJWTToken(); err != nil {
+		return a.Context.JSON(200, err)
 	}
-	return auth.Context.JSON(200, status.AUTH_SuccessfullySignedIn())
+	return a.Context.JSON(200, status.AUTH_SuccessfullySignedIn())
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -110,8 +109,8 @@ func JWTLoginFlow(auth *m.Authentication) error {
 // AUTH_Create2FACode handles the 2FA code validation
 func AUTH_Create2FACode(c echo.Context) error {
 	// Initiate Authentication
-	auth := &m.Authentication{}
-	auth.Init("2fa", c)
+	a := &auth.Authenticator{}
+	a.Init("2fa", c)
 
 	user := c.Get("user")
 	if user == nil {
@@ -123,7 +122,7 @@ func AUTH_Create2FACode(c echo.Context) error {
 	userID := uint(claims["userid"].(float64))
 	username := claims["username"].(string)
 
-	code, err := auth.Create2FACode(userID, username)
+	code, err := a.Create2FACode(userID, username)
 	if err != nil {
 		return c.JSON(http.StatusOK, status.AUTH_2FAQRCodeError())
 	}
@@ -137,18 +136,18 @@ func AUTH_Create2FACode(c echo.Context) error {
 // AUTH_2FACode handles the 2FA code validation
 func AUTH_2FACode(c echo.Context) error {
 	// Initiate Authentication
-	auth := &m.Authentication{}
-	auth.Init("2fa", c)
+	a := &auth.Authenticator{}
+	a.Init("2fa", c)
 
 	// Check Temp2FAToken if valid
-	auth.CheckTemp2FAToken()
+	a.CheckTemp2FAToken()
 
 	// Validate if the provided 2FA code is valid
-	valid := auth.Validate2FACode()
+	valid := a.Validate2FACode()
 	if !valid {
 		return c.JSON(200, status.AUTH_2FAAuthenticationError())
 	}
 
 	// Continue with the JWT login flow
-	return JWTLoginFlow(auth)
+	return JWTLoginFlow(a)
 }

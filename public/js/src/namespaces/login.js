@@ -1,3 +1,6 @@
+const PARAMETERS_INVALID = "parameters_invalid";
+const CREDENTIALS_INVALID = "credentials_invalid";
+const TWOFA_REQUIRED = "2fa_required";
 export default class Login {
     constructor() {
         this.Init = data => {
@@ -50,16 +53,18 @@ export default class Login {
                 })
                 .then(json => {
                     if (json.status != 200) {
-                        // throw new Error(json.message);
-
-                        if (json.error == "parameters_invalid") {
+                        if (json.message == PARAMETERS_INVALID) {
                             console.log("Your credentials cannot be empty");
-                        } else if (json.error == "credentials_invalid") {
+                        } else if (json.message == CREDENTIALS_INVALID) {
                             console.log("Your credentials are invalid");
                         } else {
                             console.log("There was an error loggin you in");
                         }
+                        return;
+                    }
 
+                    if (json.message == TWOFA_REQUIRED) {
+                        this.show2FACodeInput();
                         return;
                     }
 
@@ -68,6 +73,10 @@ export default class Login {
                 .catch(err => {
                     throw new Error(err);
                 });
+        };
+
+        this.show2FACodeInput = () => {
+            console.log("2FA");
         };
     }
 }
