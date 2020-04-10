@@ -37,7 +37,7 @@ type Config struct {
 // Init reads the config.json file by the provided path and creates an Config
 // instance.
 func (c *Config) Init(p string) {
-	aP := util.GetAbsPath(p)
+	aP := util.AbsolutePath(p)
 
 	file, err := os.Open(aP)
 	if err != nil {

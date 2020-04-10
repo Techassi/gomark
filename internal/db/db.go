@@ -37,6 +37,8 @@ func (d *DB) Init(c *m.Config) {
 		&m.Settings{},
 		&m.Bookmark{},
 		&m.Folder{},
+		&m.Note{},
+		&m.Entity{},
 		&m.EntityRelation{},
 	)
 
@@ -190,8 +192,8 @@ func subItem(parentID, childID uint, t string) string {
 ////////////////////////////// BOOKMARK FUNCTIONS //////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func (d *DB) SaveBookmark(b m.Bookmark) {
-	d.Conn.Save(&b)
+func (d *DB) SaveEntity(e m.Entity) {
+	d.Conn.Save(&e)
 }
 
 func (d *DB) SaveBookmarkToFolder(parentHash string, b m.Bookmark) error {
@@ -211,11 +213,11 @@ func (d *DB) SaveBookmarkToFolder(parentHash string, b m.Bookmark) error {
 	return nil
 }
 
-func (d *DB) GetBookmarksByUserID(id uint) []m.Bookmark {
-	b := []m.Bookmark{}
+func (d *DB) GetBookmarksByUserID(id uint) []m.Entity {
+	e := []m.Entity{}
 
-	d.Conn.Set("gorm:auto_preload", true).Where("owner_id = ?", id).Find(&b)
-	return b
+	d.Conn.Set("gorm:auto_preload", true).Where("owner_id = ? AND type = ?", id, "bookmark").Find(&e)
+	return e
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -87,14 +87,12 @@
             </div>
             <div class="wrapper gomark_recently_added">
                 <h2>Recent bookmarks</h2>
-                {{ range .bookmarks }} {{ template "entity/bookmark" . }} {{ end }}
+                {{ range .entities }} {{ template "entity/entity" . }} {{ end }}
             </div>
         </div>
         <div class="wrapper gomark_all">
             <div class="gomark_folders"></div>
-            <div class="gomark_bookmarks">
-                {{ range .bookmarks }} {{ template "entity/bookmark" . }} {{ end }}
-            </div>
+            <div class="gomark_bookmarks"></div>
         </div>
     </main>
     {{ template "footer/footer" }}

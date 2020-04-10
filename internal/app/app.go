@@ -1,6 +1,7 @@
 package app
 
 import (
+	// "github.com/Techassi/gomark/internal/authentication"
 	"github.com/Techassi/gomark/internal/db"
 	m "github.com/Techassi/gomark/internal/models"
 	"github.com/Techassi/gomark/internal/scheduler"
@@ -11,7 +12,8 @@ type App struct {
 	Config    *m.Config
 	DB        *db.DB
 	Scheduler *scheduler.Scheduler
-	Settings  m.Settings
+	// Authenticator *authentication.Authenticator
+	Settings m.Settings
 }
 
 // New initiates a new App instance and returns it.
