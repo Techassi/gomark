@@ -181,6 +181,17 @@ func (app *App) API_PostBookmarkTags(c echo.Context) error {
 	})
 }
 
+func (app *App) API_ShareBookmark(c echo.Context) error {
+	shareHash, err := app.DB.ShareBookmark(c.Param("hash"))
+	if err != nil {
+		return c.JSON(http.StatusOK, status.API_InternalError(err))
+	}
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"status":     http.StatusOK,
+		"share_hash": shareHash,
+	})
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////// FOLDER FUNCTIONS ///////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////

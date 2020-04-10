@@ -220,6 +220,32 @@ func (d *DB) GetBookmarksByUserID(id uint) []m.Entity {
 	return e
 }
 
+func (d *DB) ShareBookmark(hash string) (string, error) {
+	var (
+		e         m.Entity
+		shareHash string
+		err       error
+	)
+
+	for e.ID != 0 || shareHash == "" {
+		shareHash, err = util.RandomCryptoString(16)
+		if err != nil {
+			return "", err
+		}
+
+		d.Conn.Where("share_hash = ?", shareHash).Find(&e)
+	}
+
+	d.Conn.Model(&e).Where("hash = ? AND type = ?", hash, "bookmark").Update("share_hash", shareHash)
+	return shareHash, nil
+}
+
+func (d *DB) GetShared(shareHash string) m.Entity {
+	var e m.Entity
+	d.Conn.Set("gorm:auto_preload", true).Where("share_hash = ?", shareHash).First(&e)
+	return e
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////// FOLDER FUNCTIONS ///////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////

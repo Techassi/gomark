@@ -11,6 +11,13 @@ func API_GeneralAccesError() map[string]interface{} {
 	}
 }
 
+func API_InternalError(err error) map[string]interface{} {
+	return map[string]interface{}{
+		"status":  http.StatusInternalServerError,
+		"message": err.Error(),
+	}
+}
+
 func API_GeneralSuccess() map[string]interface{} {
 	return map[string]interface{}{
 		"status":  http.StatusOK,

@@ -1,22 +1,25 @@
 package models
 
 import (
+	"time"
+
 	"github.com/jinzhu/gorm"
 )
 
 type Entity struct {
 	gorm.Model `json:"-"`
-	OwnerID    uint      `json:"-"`
-	Type       string    `json:"type"`
-	Hash       string    `json:"hash"`
-	ShareHash  string    `json:"share_hash"`
-	Name       string    `json:"name"`
-	Shared     bool      `json:"shared"`
-	Pinned     bool      `json:"pinned"`
-	Bookmark   *Bookmark `json:"bookmark"`
-	Folder     *Folder   `json:"folder"`
-	Note       *Note     `json:"note"`
-	HasParent  bool      `json:"has_parent"`
+	OwnerID    uint       `json:"-"`
+	Type       string     `json:"type"`
+	Hash       string     `json:"hash"`
+	Name       string     `json:"name"`
+	Pinned     bool       `json:"pinned"`
+	Bookmark   *Bookmark  `json:"bookmark"`
+	Folder     *Folder    `json:"folder"`
+	Note       *Note      `json:"note"`
+	HasParent  bool       `json:"has_parent"`
+	ShareHash  string     `json:"share_hash"`
+	ShareUntil *time.Time `json:"share_until"`
+	ShareTimes uint       `json:"share_times"`
 }
 
 type Bookmark struct {

@@ -39,8 +39,11 @@ func (app *App) UI_404Page(c echo.Context) error {
 //////////////////////////////// BOOKMARK PAGES ////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func (app *App) UI_SharedBookmarkPage(c echo.Context) error {
-	return c.Render(http.StatusOK, "shared-bookmark.html", map[string]interface{}{})
+func (app *App) UI_SharedEntityPage(c echo.Context) error {
+	return c.Render(http.StatusOK, "shared-entity.html", map[string]interface{}{
+		"config": app.Config,
+		"entity": app.DB.GetShared(c.Param("hash")),
+	})
 }
 
 func (app *App) UI_RecentBookmarksPage(c echo.Context) error {

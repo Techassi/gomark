@@ -2,7 +2,7 @@ package util
 
 import (
 	crand "crypto/rand"
-	"encoding/base32"
+	"encoding/base64"
 	mrand "math/rand"
 	"time"
 )
@@ -28,7 +28,7 @@ func RandomCryptoString(n int) (string, error) {
 		return "", err
 	}
 
-	return base32.StdEncoding.EncodeToString(s), nil
+	return base64.RawURLEncoding.EncodeToString(s), nil
 }
 
 func RandomByteSlice(n uint32) ([]byte, error) {

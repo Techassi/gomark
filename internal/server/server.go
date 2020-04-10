@@ -76,7 +76,7 @@ func (s *Server) Run() {
 	s.Mux.GET("/code", s.App.UI_2FACodePage)
 	s.Mux.GET("/login", s.App.UI_LoginPage)
 	s.Mux.GET("/register", s.App.UI_RegisterPage)
-	s.Mux.GET("/s/:hash", s.App.UI_SharedBookmarkPage)
+	s.Mux.GET("/s/:hash", s.App.UI_SharedEntityPage)
 
 	s.Mux.POST("/auth/login", s.App.AUTH_Login)
 	s.Mux.POST("/auth/register", s.App.AUTH_Register)
@@ -119,13 +119,12 @@ func (s *Server) Run() {
 	v1.GET("/recent", s.App.API_GetRecentBookmarks)
 	v1.GET("/bookmarks", s.App.API_GetBookmarks)
 	v1.GET("/bookmarks/:hash", s.App.API_GetBookmark)
-	v1.GET("/bookmarks/:hash/tags", s.App.API_GetBookmarkTags)
 	v1.GET("/folders", s.App.API_GetFolders)
 	v1.GET("/folders/:hash", s.App.API_GetSubFolders)
 
 	v1.POST("/bookmark", s.App.API_PostBookmark)
 	v1.POST("/bookmark/:hash", s.App.API_UpdateBookmark)
-	v1.POST("/bookmark/:hash/tags", s.App.API_PostBookmarkTags)
+	v1.POST("/bookmark/:hash/share", s.App.API_ShareBookmark)
 	v1.POST("/folder", s.App.API_PostFolder)
 	v1.POST("/folder/:hash", s.App.API_PostEntityToFolder)
 
