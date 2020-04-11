@@ -3,7 +3,6 @@ package app
 import (
 	"net/http"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 )
 
@@ -76,19 +75,19 @@ func (app *App) UI_NotesPage(c echo.Context) error {
 
 // UI_HomePage renders the home page
 func (app *App) UI_HomePage(c echo.Context) error {
-	user := c.Get("user")
-	if user == nil {
-		return c.Redirect(http.StatusMovedPermanently, "/login")
-	}
+	// user := c.Get("user")
+	// if user == nil {
+	// 	return c.Redirect(http.StatusMovedPermanently, "/login")
+	// }
 
-	token := user.(*jwt.Token)
-	claims := token.Claims.(jwt.MapClaims)
-	userID := uint(claims["userid"].(float64))
+	// token := user.(*jwt.Token)
+	// claims := token.Claims.(jwt.MapClaims)
+	// userID := uint(claims["userid"].(float64))
 
 	return c.Render(http.StatusOK, "home.html", map[string]interface{}{
-		"config":   app.Config,
-		"user":     claims["username"].(string),
-		"entities": app.DB.GetBookmarksByUserID(userID),
+		"config": app.Config,
+		// "user":     claims["username"].(string),
+		"entities": app.DB.GetBookmarks(),
 	})
 }
 

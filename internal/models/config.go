@@ -13,6 +13,7 @@ import (
 // Config represents the structure of the config.json file.
 type Config struct {
 	Domain  string `json:"domain"`
+	WebRoot string `json:"web_root"`
 	BaseURL string `json:"base_url"`
 	UseSSL  bool   `json:"use_ssl"`
 	DB      struct {

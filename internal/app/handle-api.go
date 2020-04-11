@@ -259,3 +259,13 @@ func (app *App) API_PostFolder(c echo.Context) error {
 	// app.DB.SaveFolder(f)
 	return c.JSON(http.StatusOK, status.API_GeneralSuccess())
 }
+
+////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////// EVENT FUNCTIONS ///////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+func (app *App) API_PostEvent(c echo.Context) error {
+	job := app.Scheduler.Job(c.FormValue("event-type"), c.FormValue("event-data"))
+	go app.Scheduler.Schedule(job)
+	return c.JSON(http.StatusOK, status.API_GeneralSuccess())
+}

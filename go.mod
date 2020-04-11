@@ -1,6 +1,7 @@
 module github.com/Techassi/gomark
 
 require (
+	github.com/PuerkitoBio/goquery v1.5.1
 	github.com/appleboy/gin-jwt/v2 v2.6.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dgryski/dgoogauth v0.0.0-20190221195224-5a805980a5f3
@@ -12,6 +13,7 @@ require (
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/labstack/echo/v4 v4.1.11
 	github.com/mitchellh/go-homedir v1.1.0
+	github.com/pkg/errors v0.8.0
 	github.com/skip2/go-qrcode v0.0.0-20191027152451-9434209cb086
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.3.2

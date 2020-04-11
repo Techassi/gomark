@@ -9,12 +9,16 @@ Web-based bookmark manager written in GO. CURRENTLY IN DEVELOPMENT (NOT FEATURE-
 
 ## Current Development
 
--   API Routes and Data Structures
--   Need to rethink Data Structure
+-   API Routes
+-   Scheduler, which does multi-threaded work in the background
+-   Add image resizer
 
 ## Planned Features
 
 -   Management of Bookmarks, Notes and Folders
+-   Archive pages and save them on disk
+    -   Style and JavaScipt donwloader
+    -   Simplify HTML structure
 -   User Management
 -   Sharing of Bookmarks, Notes and Folders
 

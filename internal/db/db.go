@@ -246,6 +246,18 @@ func (d *DB) GetShared(shareHash string) m.Entity {
 	return e
 }
 
+func (d *DB) GetBookmarkByHash(hash string) m.Entity {
+	var e m.Entity
+	d.Conn.Set("gorm:auto_preload", true).Where("hash = ?", hash).First(&e)
+	return e
+}
+
+func (d *DB) GetBookmarks() []m.Entity {
+	var e []m.Entity
+	d.Conn.Set("gorm:auto_preload", true).Where("type = ?", "bookmark").Find(&e)
+	return e
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////// FOLDER FUNCTIONS ///////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////

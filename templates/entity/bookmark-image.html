@@ -2,7 +2,7 @@
 {{ $char := .Name | FormatNoImage}}
 <a class="bookmark_image {{ $char | FormatColor }}" href="b/{{ .Hash }}">
     {{ if .Bookmark.ImageURL }}
-    <img src="{{ .ImageURL }}" alt="{{ .Name }}">
+    <img src="image/{{ .Hash }}/{{ .Bookmark.ImageURL }}" alt="{{ .Name }}">
     {{ else }}
     <span>{{ $char }}</span>
     {{ end }}

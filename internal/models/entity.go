@@ -25,9 +25,11 @@ type Entity struct {
 type Bookmark struct {
 	gorm.Model  `json:"-"`
 	EntityID    uint   `json:"-"`
+	Archived    bool   `json:"archived"`
 	Description string `json:"description" gorm:"size:500"`
 	URL         string `json:"url" gorm:"size:1000"`
 	ImageURL    string `json:"image_url"`
+	Content     string `json:"content"`
 }
 
 type Note struct {

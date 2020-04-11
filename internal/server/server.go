@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"path/filepath"
 	"strconv"
 
 	"github.com/Techassi/gomark/internal/app"
+	cnst "github.com/Techassi/gomark/internal/constants"
 	tpl "github.com/Techassi/gomark/internal/templating"
 	"github.com/Techassi/gomark/internal/util"
 
@@ -71,6 +73,7 @@ func (s *Server) Run() {
 	s.Mux.Static("/css", util.AbsolutePath("public/scss"))
 	s.Mux.Static("/assets", util.AbsolutePath("public/assets"))
 	s.Mux.Static("/font", util.AbsolutePath("public/assets/fonts"))
+	s.Mux.Static("/image", filepath.Join(s.App.Config.WebRoot, cnst.FS_IMAGE_DIR))
 
 	// Unprotected routes
 	s.Mux.GET("/code", s.App.UI_2FACodePage)
@@ -100,7 +103,7 @@ func (s *Server) Run() {
 
 	// Protected routes
 	pr := s.Mux.Group("/")
-	pr.Use(middleware.JWTWithConfig(jwtConfig))
+	// pr.Use(middleware.JWTWithConfig(jwtConfig))
 
 	pr.GET("", s.App.UI_HomePage)
 	pr.GET("/notes", s.App.UI_NotesPage)
@@ -112,7 +115,7 @@ func (s *Server) Run() {
 
 	// API routes
 	api := s.Mux.Group("/api")
-	api.Use(middleware.JWTWithConfig(jwtConfig))
+	// api.Use(middleware.JWTWithConfig(jwtConfig))
 
 	// v1 API routes
 	v1 := api.Group("/v1")
@@ -127,6 +130,9 @@ func (s *Server) Run() {
 	v1.POST("/bookmark/:hash/share", s.App.API_ShareBookmark)
 	v1.POST("/folder", s.App.API_PostFolder)
 	v1.POST("/folder/:hash", s.App.API_PostEntityToFolder)
+
+	// Event endpoint
+	v1.POST("/event", s.App.API_PostEvent)
 
 	// Auth routes
 	auth := s.Mux.Group("/auth")

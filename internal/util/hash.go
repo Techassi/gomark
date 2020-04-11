@@ -117,6 +117,12 @@ func decodeHash(encodedHash string) (p *Argon2Params, salt, hash []byte, err err
 /////////////////////////////// ENTITY FUNCTIONS ///////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+func Adler32(src string) string {
+	h := adler32.New()
+	h.Write([]byte(src))
+	return hex.EncodeToString(h.Sum(nil))
+}
+
 func EntityHash(name, url string) string {
 	h := adler32.New()
 	s := fmt.Sprintf("%s%s", name, url)
