@@ -1,5 +1,4 @@
-{{ define "entity/bookmark-image" }}
-{{ $char := .Name | FormatNoImage}}
+{{ define "entity/bookmark-image" }}{{ $char := .Name | FormatNoImage}}
 <a class="bookmark_image {{ $char | FormatColor }}" href="b/{{ .Hash }}">
     {{ if .Bookmark.ImageURL }}
     <img src="image/{{ .Hash }}/{{ .Bookmark.ImageURL }}" alt="{{ .Name }}">

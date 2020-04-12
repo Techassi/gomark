@@ -31,7 +31,9 @@ type Scheduler struct {
 type Job struct {
 	Work      string
 	Data      string
+	Entity    m.Entity
 	Result    Result
+	Archive   Archive
 	Scheduler *Scheduler
 }
 
@@ -39,6 +41,10 @@ type Result struct {
 	Title       string
 	Description string
 	Image       string
+}
+
+type Archive struct {
+	Body []byte
 }
 
 var (

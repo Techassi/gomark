@@ -1,5 +1,3 @@
 {{ define "entity/entity" }}
-{{ if eq .Type "bookmark" }}
-{{ template "entity/bookmark" . }}
-{{ end }}
+{{ if eq .Type "bookmark" }}{{ template "entity/bookmark" . }}{{ end }}
 {{ end }}

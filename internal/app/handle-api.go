@@ -109,18 +109,18 @@ func (app *App) API_GetRecentBookmarks(c echo.Context) error {
 
 // API_GetBookmarks gets all bookmarks
 func (app *App) API_GetBookmarks(c echo.Context) error {
-	user := c.Get("user")
-	if user == nil {
-		return c.JSON(http.StatusOK, status.API_GeneralAccesError())
-	}
+	// user := c.Get("user")
+	// if user == nil {
+	// 	return c.JSON(http.StatusOK, status.API_GeneralAccesError())
+	// }
 
-	token := user.(*jwt.Token)
-	claims := token.Claims.(jwt.MapClaims)
-	userID := uint(claims["userid"].(float64))
+	// token := user.(*jwt.Token)
+	// claims := token.Claims.(jwt.MapClaims)
+	// userID := uint(claims["userid"].(float64))
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"status":    http.StatusOK,
-		"bookmarks": app.DB.GetBookmarksByUserID(userID),
+		"bookmarks": app.DB.GetBookmarks(),
 	})
 }
 
@@ -140,22 +140,22 @@ func (app *App) API_GetBookmarkTags(c echo.Context) error {
 
 // API_PostBookmark saves a bookmark
 func (app *App) API_PostBookmark(c echo.Context) error {
-	user := c.Get("user")
-	if user == nil {
-		return c.JSON(http.StatusOK, status.API_GeneralAccesError())
-	}
+	// user := c.Get("user")
+	// if user == nil {
+	// 	return c.JSON(http.StatusOK, status.API_GeneralAccesError())
+	// }
 
-	token := user.(*jwt.Token)
-	claims := token.Claims.(jwt.MapClaims)
+	// token := user.(*jwt.Token)
+	// claims := token.Claims.(jwt.MapClaims)
 
 	entityName := c.FormValue("bookmark-name")
 	entityDesc := c.FormValue("bookmark-desc")
 	entityURL := c.FormValue("bookmark-url")
 	entityHash := util.EntityHash(entityName, entityURL)
-	entityOwner := uint(claims["userid"].(float64))
+	// entityOwner := uint(claims["userid"].(float64))
 
 	e := m.Entity{
-		OwnerID: entityOwner,
+		OwnerID: 1,
 		Type:    "bookmark",
 		Hash:    entityHash,
 		Name:    entityName,

@@ -1,49 +1,117 @@
 package scheduler
 
 import (
+	"bytes"
 	"fmt"
-	"net/http"
+	"io/ioutil"
 	"net/url"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
+// HandleArchive handles the archiving of entities
 func HandleArchive(job Job) {
+	fmt.Printf("Scheduler | Archive -> %s\n", job.Data)
 
+	// Get entity from database
+	e := job.Scheduler.DB.GetBookmarkByHash(job.Data)
+	if e.ID == 0 {
+		fmt.Println("No entity found")
+		return
+	}
+
+	// Fetch content from url
+	res, err := job.Scheduler.fetch(e.Bookmark.URL)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// Create []bytes from body
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return
+	}
+
+	job.Archive = Archive{
+		Body: body,
+	}
+	job.Entity = e
+	job.Work = "download-sources"
+	go job.Scheduler.Schedule(job)
 }
 
-func HandleMetaDownload(job Job) {
-	fmt.Printf("Scheduler | Meta Download -> %s\n", job.Data)
+// HandleDownloadSources handles the download of CSS and JS source files from archived
+// entities
+func HandleDownloadSources(job Job) {
+	fmt.Printf("Scheduler | Download Sources -> %s\n", job.Data)
+
+	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(job.Archive.Body))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	root, err := url.Parse(job.Entity.Bookmark.URL)
+	doc.Find("link[rel=\"stylesheet\"]").Each(func(i int, s *goquery.Selection) {
+		if href, exists := s.Attr("href"); exists {
+			u, err := url.Parse(href)
+			if !u.IsAbs() {
+				u.Scheme = root.Scheme
+				u.Host = root.Host
+			}
+
+			// TODO: Optimize this - dont convert back to string
+			res, err := job.Scheduler.fetch(u.String())
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+
+			file, err := job.Scheduler.archiveSource(res, job.Data)
+			s.SetAttr("href", file)
+		}
+	})
+
+	html, _ := doc.Html()
+	job.Archive.Body = []byte(html)
+	job.Work = "save-html"
+	go job.Scheduler.Schedule(job)
+}
+
+func HandleSaveHtml(job Job) {
+	fmt.Printf("Scheduler | Saving HTML -> %s\n", job.Data)
+
+	err := job.Scheduler.archiveHtml(job.Archive.Body, job.Data)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+}
+
+// HandleDownloadMeta handles the download of meta data
+func HandleDownloadMeta(job Job) {
+	fmt.Printf("Scheduler | Download Metadata -> %s\n", job.Data)
+
+	// Get entity from database
 	e := job.Scheduler.DB.GetBookmarkByHash(job.Data)
 	if e.ID == 0 {
 		return
 	}
 
-	url, err := url.Parse(e.Bookmark.URL)
+	// Fetch content from url
+	res, err := job.Scheduler.fetch(e.Bookmark.URL)
 	if err != nil {
 		return
 	}
 
-	req := &http.Request{
-		Method:     "GET",
-		URL:        url,
-		Proto:      "HTTP/1.1",
-		ProtoMajor: 1,
-		ProtoMinor: 1,
-	}
-
-	res, err := job.Scheduler.HTTPClient.Do(req)
+	// Create []bytes from body
+	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer res.Body.Close()
-
-	if res.StatusCode > 203 {
 		return
 	}
 
-	doc, err := goquery.NewDocumentFromReader(res.Body)
+	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(body))
 	if err != nil {
 		return
 	}
@@ -68,36 +136,26 @@ func HandleMetaDownload(job Job) {
 		Image:       ogpImage,
 	}
 
+	res.Body.Close()
 	job.Work = "download-image"
 	go job.Scheduler.Schedule(job)
 }
 
-func HandleImageDownload(job Job) {
-	fmt.Printf("Scheduler | Image Download -> %s\n", job.Data)
-	url, err := url.Parse(job.Result.Image)
+// HandleDownloadImage handles the download of images
+func HandleDownloadImage(job Job) {
+	fmt.Printf("Scheduler | Download Image -> %s\n", job.Data)
+	if job.Result.Image == "" {
+		job.Work = "save"
+		go job.Scheduler.Schedule(job)
+		return
+	}
+
+	res, err := job.Scheduler.fetch(job.Result.Image)
 	if err != nil {
 		return
 	}
 
-	req := &http.Request{
-		Method:     "GET",
-		URL:        url,
-		Proto:      "HTTP/1.1",
-		ProtoMajor: 1,
-		ProtoMinor: 1,
-	}
-
-	res, err := job.Scheduler.HTTPClient.Do(req)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	if res.StatusCode > 203 {
-		return
-	}
-
-	file, err := job.Scheduler.saveImageToDisk(res, job.Data)
+	file, err := job.Scheduler.saveImage(res, job.Data)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -108,8 +166,9 @@ func HandleImageDownload(job Job) {
 	go job.Scheduler.Schedule(job)
 }
 
+// HandleSave handles the saving of entities to the database
 func HandleSave(job Job) {
-	fmt.Printf("Scheduler | Save -> %s\n", job.Data)
+	fmt.Printf("Scheduler | Saving -> %s\n", job.Data)
 	e := job.Scheduler.DB.GetBookmarkByHash(job.Data)
 
 	if e.Name == "" {

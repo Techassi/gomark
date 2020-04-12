@@ -71,9 +71,11 @@ func (s *Server) Run() {
 	// Static routes
 	s.Mux.Static("/js", util.AbsolutePath("public/js/dist"))
 	s.Mux.Static("/css", util.AbsolutePath("public/scss"))
-	s.Mux.Static("/assets", util.AbsolutePath("public/assets"))
 	s.Mux.Static("/font", util.AbsolutePath("public/assets/fonts"))
+
+	// Image and archive routes
 	s.Mux.Static("/image", filepath.Join(s.App.Config.WebRoot, cnst.FS_IMAGE_DIR))
+	s.Mux.Static("/archive", filepath.Join(s.App.Config.WebRoot, cnst.FS_ARCHIVE_DIR))
 
 	// Unprotected routes
 	s.Mux.GET("/code", s.App.UI_2FACodePage)

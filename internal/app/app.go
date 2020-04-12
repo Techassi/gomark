@@ -36,10 +36,12 @@ func (a *App) Init(c string) {
 
 	a.Scheduler = scheduler.New(a.Config, a.DB, 2)
 	a.Scheduler.RegisterTasks(map[string]func(scheduler.Job){
-		"download-meta":  scheduler.HandleMetaDownload,
-		"download-image": scheduler.HandleImageDownload,
-		"archive":        scheduler.HandleArchive,
-		"save":           scheduler.HandleSave,
+		"download-meta":    scheduler.HandleDownloadMeta,
+		"download-image":   scheduler.HandleDownloadImage,
+		"download-sources": scheduler.HandleDownloadSources,
+		"archive":          scheduler.HandleArchive,
+		"save":             scheduler.HandleSave,
+		"save-html":        scheduler.HandleSaveHtml,
 	})
 	a.Scheduler.Start()
 
