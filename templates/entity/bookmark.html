@@ -5,7 +5,8 @@
         <a class="name" href="b/{{ .Hash }}">
             <h3>{{ .Name }}</h3>
         </a>
-        <a class="link" href="{{ .Bookmark.URL }}" target="_blank" rel="noreferrer">{{ .Bookmark.URL }}</a>
+        <a class="link" href="{{ .Bookmark.URL }}" target="_blank" rel="noreferrer"
+            aria-label="Open {{ .Bookmark.URL }} in a new tab">{{ .Bookmark.URL }}</a>
         <p>{{ .Bookmark.Description }}</p>
     </div>
 </div>

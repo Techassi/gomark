@@ -10,18 +10,21 @@ func FormatNoImage(u string) string {
 	return string(u[0])
 }
 
-func FormatColor(c string) string {
-	color := ""
-	charIndex := strings.Index(alphabet, strings.ToUpper(c))
+func FormatColor(c, url string) string {
+	var (
+		color     string = ""
+		charIndex int    = strings.Index(alphabet, strings.ToUpper(c))
+	)
+
 	switch {
-	case charIndex < 7:
+	case charIndex < 7 || url != "":
 		color = ""
 	case charIndex < 14:
-		color = "blue"
+		color = " blue"
 	case charIndex < 21:
-		color = "orange"
+		color = " orange"
 	default:
-		color = "green"
+		color = " green"
 	}
 	return color
 }

@@ -10,10 +10,20 @@ var (
 	ErrorHTTPStatusCode = errors.New("HTTP status code greater than 203")
 )
 
-func (s *Scheduler) fetch(u string) (*http.Response, error) {
-	url, err := url.Parse(u)
+func (s *Scheduler) fetch(u ...string) (*http.Response, error) {
+	url, err := url.Parse(u[0])
 	if err != nil {
 		return nil, err
+	}
+
+	if !url.IsAbs() {
+		r, err := url.Parse(u[1])
+		if err != nil {
+			return nil, err
+		}
+
+		url.Scheme = r.Scheme
+		url.Host = r.Host
 	}
 
 	req := &http.Request{

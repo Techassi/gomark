@@ -9,8 +9,8 @@ Web-based bookmark manager written in GO. CURRENTLY IN DEVELOPMENT (NOT FEATURE-
 
 ## Current Development
 
--   API Routes
 -   Scheduler, which does multi-threaded work in the background
+    -   Add fallbacks if could not download
 -   Add image resizer
 
 ## Planned Features

@@ -110,6 +110,11 @@ func (s *Scheduler) Schedule(job Job) {
 	s.Queue <- job
 }
 
+func (s *Scheduler) Next(w string, job Job) {
+	job.Work = w
+	s.Queue <- job
+}
+
 func (s *Scheduler) GetTask(work string) (func(Job), error) {
 	if f, ok := s.Tasks[work]; ok {
 		return f, nil

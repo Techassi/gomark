@@ -166,6 +166,7 @@ func (app *App) API_PostBookmark(c echo.Context) error {
 	}
 
 	app.DB.SaveEntity(e)
+	go app.Scheduler.Schedule(app.Scheduler.Job("download-meta", entityHash))
 	return c.JSON(http.StatusOK, status.API_GeneralSuccess())
 }
 

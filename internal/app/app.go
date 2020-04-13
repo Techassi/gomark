@@ -40,6 +40,7 @@ func (a *App) Init(c string) {
 		"download-image":   scheduler.HandleDownloadImage,
 		"download-sources": scheduler.HandleDownloadSources,
 		"archive":          scheduler.HandleArchive,
+		"archived":         scheduler.HandleArchived,
 		"save":             scheduler.HandleSave,
 		"save-html":        scheduler.HandleSaveHtml,
 	})

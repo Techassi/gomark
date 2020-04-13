@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"net/url"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -52,17 +51,9 @@ func HandleDownloadSources(job Job) {
 		return
 	}
 
-	root, err := url.Parse(job.Entity.Bookmark.URL)
 	doc.Find("link[rel=\"stylesheet\"]").Each(func(i int, s *goquery.Selection) {
 		if href, exists := s.Attr("href"); exists {
-			u, err := url.Parse(href)
-			if !u.IsAbs() {
-				u.Scheme = root.Scheme
-				u.Host = root.Host
-			}
-
-			// TODO: Optimize this - dont convert back to string
-			res, err := job.Scheduler.fetch(u.String())
+			res, err := job.Scheduler.fetch(href, job.Entity.Bookmark.URL)
 			if err != nil {
 				fmt.Println(err)
 				return
@@ -87,6 +78,9 @@ func HandleSaveHtml(job Job) {
 		fmt.Println(err)
 		return
 	}
+
+	job.Work = "archived"
+	go job.Scheduler.Schedule(job)
 }
 
 // HandleDownloadMeta handles the download of meta data
@@ -96,12 +90,14 @@ func HandleDownloadMeta(job Job) {
 	// Get entity from database
 	e := job.Scheduler.DB.GetBookmarkByHash(job.Data)
 	if e.ID == 0 {
+		fmt.Println("Not found")
 		return
 	}
 
 	// Fetch content from url
 	res, err := job.Scheduler.fetch(e.Bookmark.URL)
 	if err != nil {
+		fmt.Printf("Cannot download: %s\n", e.Bookmark.URL)
 		return
 	}
 
@@ -118,8 +114,9 @@ func HandleDownloadMeta(job Job) {
 
 	title := doc.Find("title").First().Text()
 	desc, _ := doc.Find("meta[name=\"description\"]").First().Attr("content")
+	favicon, _ := doc.Find("link[rel=\"icon\"]").First().Attr("href")
 	ogpTitle, _ := doc.Find("meta[property=\"og:title\"]").First().Attr("content")
-	ogpImage, _ := doc.Find("meta[property=\"og:image\"]").First().Attr("content")
+	// ogpImage, _ := doc.Find("meta[property=\"og:image\"]").First().Attr("content")
 	ogpDesc, _ := doc.Find("meta[property=\"og:description\"]").First().Attr("content")
 
 	if ogpTitle != "" {
@@ -133,8 +130,9 @@ func HandleDownloadMeta(job Job) {
 	job.Result = Result{
 		Title:       title,
 		Description: desc,
-		Image:       ogpImage,
+		Image:       favicon,
 	}
+	job.Entity = e
 
 	res.Body.Close()
 	job.Work = "download-image"
@@ -145,25 +143,27 @@ func HandleDownloadMeta(job Job) {
 func HandleDownloadImage(job Job) {
 	fmt.Printf("Scheduler | Download Image -> %s\n", job.Data)
 	if job.Result.Image == "" {
-		job.Work = "save"
-		go job.Scheduler.Schedule(job)
+		go job.Scheduler.Next("save", job)
 		return
 	}
 
-	res, err := job.Scheduler.fetch(job.Result.Image)
-	if err != nil {
-		return
-	}
-
-	file, err := job.Scheduler.saveImage(res, job.Data)
+	res, err := job.Scheduler.fetch(job.Result.Image, job.Entity.Bookmark.URL)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
+	// TODO: Handle files like this 0b7e02e7.ico?v=JykvN0w9Ye
+	file, err := job.Scheduler.saveImage(res, job.Data)
+	if err != nil {
+		fmt.Println(err)
+
+		go job.Scheduler.Next("save", job)
+		return
+	}
+
 	job.Result.Image = file
-	job.Work = "save"
-	go job.Scheduler.Schedule(job)
+	go job.Scheduler.Next("save", job)
 }
 
 // HandleSave handles the saving of entities to the database
@@ -184,4 +184,9 @@ func HandleSave(job Job) {
 	}
 
 	job.Scheduler.DB.SaveEntity(e)
+}
+
+func HandleArchived(job Job) {
+	fmt.Printf("Scheduler | Archived -> %s\n", job.Data)
+	job.Scheduler.DB.Archived(job.Data)
 }

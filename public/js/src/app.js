@@ -2,19 +2,19 @@
 ////////////////// IMPORTS //////////////////
 /////////////////////////////////////////////
 
-import barba from "@barba/core";
-import Hammer from "hammerjs/hammer.js";
+import barba from '@barba/core';
+// import Hammer from "hammerjs/hammer.js";
 
-import Login from "./namespaces/login";
-import Home from "./namespaces/home";
+import Login from './namespaces/login';
+import Home from './namespaces/home';
 
 /////////////////////////////////////////////
 ////////////////// GENERAL //////////////////
 /////////////////////////////////////////////
 
 console.info(
-    "%c🗲 gomark @ https://github.com/Techassi/gomark",
-    "color: #FFF; background: #011C41; padding: 10px 10px;"
+	'%c🗲 gomark @ https://github.com/Techassi/gomark',
+	'color: #FFF; background: #011C41; padding: 10px 10px;'
 );
 
 /////////////////////////////////////////////
@@ -29,57 +29,57 @@ let home = new Home();
 /////////////////////////////////////////////
 
 barba.init({
-    debug: true,
-    transitions: [
-        {
-            name: "default-transition",
-            leave(data) {
-                return new Promise(resolve => {
-                    anime({
-                        targets: data.current.container,
-                        opacity: [1, 0],
-                        duration: 500,
-                        easing: "linear",
-                        complete: () => {
-                            resolve();
-                        }
-                    });
-                });
-            },
-            enter(data) {
-                return new Promise(resolve => {
-                    resolve();
-                    anime({
-                        targets: data.next.container,
-                        opacity: [0, 1],
-                        duration: 500,
-                        easing: "linear"
-                    });
-                });
-            }
-        }
-    ],
-    views: [
-        {
-            namespace: "login",
-            beforeEnter(data) {
-                login.Init(data);
-            },
-            afterEnter() {},
-            beforeLeave() {
-                login.Kill();
-            }
-        },
-        {
-            namespace: "home",
-            beforeEnter(data) {
-                console.log(data);
-                home.Init(data);
-            },
-            afterEnter() {},
-            beforeLeave() {
-                home.Kill();
-            }
-        }
-    ]
+	debug: true,
+	transitions: [
+		{
+			name: 'default-transition',
+			leave(data) {
+				return new Promise((resolve) => {
+					anime({
+						targets: data.current.container,
+						opacity: [1, 0],
+						duration: 500,
+						easing: 'linear',
+						complete: () => {
+							resolve();
+						},
+					});
+				});
+			},
+			enter(data) {
+				return new Promise((resolve) => {
+					resolve();
+					anime({
+						targets: data.next.container,
+						opacity: [0, 1],
+						duration: 500,
+						easing: 'linear',
+					});
+				});
+			},
+		},
+	],
+	views: [
+		{
+			namespace: 'login',
+			beforeEnter(data) {
+				login.Init(data);
+			},
+			afterEnter() {},
+			beforeLeave() {
+				login.Kill();
+			},
+		},
+		{
+			namespace: 'home',
+			beforeEnter(data) {
+				console.log(data);
+				home.Init(data);
+			},
+			afterEnter() {},
+			beforeLeave() {
+				home.Kill();
+			},
+		},
+	],
 });
