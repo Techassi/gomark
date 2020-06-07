@@ -16,8 +16,12 @@ func FormatColor(c, url string) string {
 		charIndex int    = strings.Index(alphabet, strings.ToUpper(c))
 	)
 
+	if url != "" {
+		return " white"
+	}
+
 	switch {
-	case charIndex < 7 || url != "":
+	case charIndex < 7:
 		color = ""
 	case charIndex < 14:
 		color = " blue"

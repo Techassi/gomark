@@ -1,5 +1,5 @@
 *.exe
-public/js/node_modules/*
+public/app/node_modules/*
 config-custom.json
 public/2fa/*
 .cobra.yaml

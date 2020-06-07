@@ -36,8 +36,7 @@ func HandleArchive(job Job) {
 		Body: body,
 	}
 	job.Entity = e
-	job.Work = "download-sources"
-	go job.Scheduler.Schedule(job)
+	go job.Scheduler.Next("download-sources", job)
 }
 
 // HandleDownloadSources handles the download of CSS and JS source files from archived
@@ -66,8 +65,7 @@ func HandleDownloadSources(job Job) {
 
 	html, _ := doc.Html()
 	job.Archive.Body = []byte(html)
-	job.Work = "save-html"
-	go job.Scheduler.Schedule(job)
+	go job.Scheduler.Next("save-html", job)
 }
 
 func HandleSaveHtml(job Job) {
@@ -79,8 +77,7 @@ func HandleSaveHtml(job Job) {
 		return
 	}
 
-	job.Work = "archived"
-	go job.Scheduler.Schedule(job)
+	go job.Scheduler.Next("archived", job)
 }
 
 // HandleDownloadMeta handles the download of meta data
@@ -115,7 +112,8 @@ func HandleDownloadMeta(job Job) {
 	title := doc.Find("title").First().Text()
 	desc, _ := doc.Find("meta[name=\"description\"]").First().Attr("content")
 	favicon, _ := doc.Find("link[rel=\"icon\"]").First().Attr("href")
-	ogpTitle, _ := doc.Find("meta[property=\"og:title\"]").First().Attr("content")
+	shortcut, _ := doc.Find("link[rel=\"shortcut icon\"]").Last().Attr("href")
+	ogpTitle, _ := doc.Find("meta[property=\"og:title\"]").Last().Attr("content")
 	// ogpImage, _ := doc.Find("meta[property=\"og:image\"]").First().Attr("content")
 	ogpDesc, _ := doc.Find("meta[property=\"og:description\"]").First().Attr("content")
 
@@ -127,6 +125,10 @@ func HandleDownloadMeta(job Job) {
 		desc = ogpDesc
 	}
 
+	if favicon == "" {
+		favicon = shortcut
+	}
+
 	job.Result = Result{
 		Title:       title,
 		Description: desc,
@@ -135,14 +137,14 @@ func HandleDownloadMeta(job Job) {
 	job.Entity = e
 
 	res.Body.Close()
-	job.Work = "download-image"
-	go job.Scheduler.Schedule(job)
+	go job.Scheduler.Next("download-image", job)
 }
 
 // HandleDownloadImage handles the download of images
 func HandleDownloadImage(job Job) {
 	fmt.Printf("Scheduler | Download Image -> %s\n", job.Data)
 	if job.Result.Image == "" {
+		fmt.Println("Image URL empty")
 		go job.Scheduler.Next("save", job)
 		return
 	}

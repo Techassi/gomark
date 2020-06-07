@@ -15,11 +15,11 @@ import (
 /////////////////////////////// ENTITY FUNCTIONS ///////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// API_GetSubEntities gets all sub entities from a parent folder
-func (app *App) API_GetSubEntities(c echo.Context) error {
+// ApiGetSubEntities gets all sub entities from a parent folder
+func (app *App) ApiGetSubEntities(c echo.Context) error {
 	user := c.Get("user")
 	if user == nil {
-		return c.JSON(http.StatusOK, status.API_GeneralAccesError())
+		return c.JSON(http.StatusOK, status.ApiGeneralAccesError())
 	}
 
 	token := user.(*jwt.Token)
@@ -32,11 +32,11 @@ func (app *App) API_GetSubEntities(c echo.Context) error {
 	})
 }
 
-// API_PostEntityToFolder saves any type of entity to a folder
-func (app *App) API_PostEntityToFolder(c echo.Context) error {
+// ApiPostEntityToFolder saves any type of entity to a folder
+func (app *App) ApiPostEntityToFolder(c echo.Context) error {
 	// user := c.Get("user")
 	// if user == nil {
-	// 	return c.JSON(http.StatusOK, status.API_GeneralAccesError())
+	// 	return c.JSON(http.StatusOK, status.ApiGeneralAccesError())
 	// }
 
 	// token := user.(*jwt.Token)
@@ -45,7 +45,7 @@ func (app *App) API_PostEntityToFolder(c echo.Context) error {
 	// parent := c.Param("hash")
 	// entity := c.QueryParam("type")
 	// if parent == "" {
-	// 	return c.JSON(http.StatusOK, status.API_NoHashProvided())
+	// 	return c.JSON(http.StatusOK, status.ApiNoHashProvided())
 	// }
 
 	// switch entity {
@@ -65,9 +65,9 @@ func (app *App) API_PostEntityToFolder(c echo.Context) error {
 	// 	}
 
 	// 	if err := app.DB.SaveSubFolder(c.Param("hash"), f); err != nil {
-	// 		return c.JSON(http.StatusOK, status.API_GeneralAccesError())
+	// 		return c.JSON(http.StatusOK, status.ApiGeneralAccesError())
 	// 	}
-	// 	return c.JSON(http.StatusOK, status.API_GeneralSuccess())
+	// 	return c.JSON(http.StatusOK, status.ApiGeneralSuccess())
 	// case "bookmark":
 	// 	bookmarkName := c.FormValue("bookmark-name")
 	// 	bookmarkDesc := c.FormValue("bookmark-desc")
@@ -89,9 +89,9 @@ func (app *App) API_PostEntityToFolder(c echo.Context) error {
 	// 	}
 
 	// 	app.DB.SaveBookmarkToFolder(c.Param("hash"), b)
-	// 	return c.JSON(http.StatusOK, status.API_GeneralSuccess())
+	// 	return c.JSON(http.StatusOK, status.ApiGeneralSuccess())
 	// default:
-	// 	return c.JSON(http.StatusOK, status.API_WrongType())
+	// 	return c.JSON(http.StatusOK, status.ApiWrongType())
 	// }
 	return nil
 }
@@ -100,49 +100,49 @@ func (app *App) API_PostEntityToFolder(c echo.Context) error {
 ////////////////////////////// BOOKMARK FUNCTIONS //////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// API_GetRecentBookmarks gets recent bookmarks
-func (app *App) API_GetRecentBookmarks(c echo.Context) error {
+// ApiGetRecentBookmarks gets recent bookmarks
+func (app *App) ApiGetRecentBookmarks(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"status": http.StatusOK,
 	})
 }
 
-// API_GetBookmarks gets all bookmarks
-func (app *App) API_GetBookmarks(c echo.Context) error {
-	// user := c.Get("user")
-	// if user == nil {
-	// 	return c.JSON(http.StatusOK, status.API_GeneralAccesError())
-	// }
+// ApiGetBookmarks gets all bookmarks
+func (app *App) ApiGetBookmarks(c echo.Context) error {
+	user := c.Get("user")
+	if user == nil {
+		return c.JSON(http.StatusOK, status.ApiGeneralAccesError())
+	}
 
-	// token := user.(*jwt.Token)
-	// claims := token.Claims.(jwt.MapClaims)
-	// userID := uint(claims["userid"].(float64))
+	token := user.(*jwt.Token)
+	claims := token.Claims.(jwt.MapClaims)
+	userID := uint(claims["userid"].(float64))
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"status":    http.StatusOK,
-		"bookmarks": app.DB.GetBookmarks(),
+		"bookmarks": app.DB.GetBookmarksByUserID(userID),
 	})
 }
 
-// API_GetBookmark gets a single bookmark matching the hash
-func (app *App) API_GetBookmark(c echo.Context) error {
+// ApiGetBookmark gets a single bookmark matching the hash
+func (app *App) ApiGetBookmark(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"status": http.StatusOK,
 	})
 }
 
-// API_GetBookmarkTags gets tags attached to a single bookmark
-func (app *App) API_GetBookmarkTags(c echo.Context) error {
+// ApiGetBookmarkTags gets tags attached to a single bookmark
+func (app *App) ApiGetBookmarkTags(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"status": http.StatusOK,
 	})
 }
 
-// API_PostBookmark saves a bookmark
-func (app *App) API_PostBookmark(c echo.Context) error {
+// ApiPostBookmark saves a bookmark
+func (app *App) ApiPostBookmark(c echo.Context) error {
 	// user := c.Get("user")
 	// if user == nil {
-	// 	return c.JSON(http.StatusOK, status.API_GeneralAccesError())
+	// 	return c.JSON(http.StatusOK, status.ApiGeneralAccesError())
 	// }
 
 	// token := user.(*jwt.Token)
@@ -167,28 +167,27 @@ func (app *App) API_PostBookmark(c echo.Context) error {
 
 	app.DB.SaveEntity(e)
 	go app.Scheduler.Schedule(app.Scheduler.Job("download-meta", entityHash))
-	return c.JSON(http.StatusOK, status.API_GeneralSuccess())
+	return c.JSON(http.StatusOK, status.ApiGeneralSuccess())
 }
 
-// API_UpdateBookmark updates a bookmark
-func (app *App) API_UpdateBookmark(c echo.Context) error {
+// ApiUpdateBookmark updates a bookmark
+func (app *App) ApiUpdateBookmark(c echo.Context) error {
 	return nil
 }
 
-// API_PostBookmarkTags saves one or more tags to a bookmark
-func (app *App) API_PostBookmarkTags(c echo.Context) error {
+// ApiPostBookmarkTags saves one or more tags to a bookmark
+func (app *App) ApiPostBookmarkTags(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"status": http.StatusOK,
 	})
 }
 
-func (app *App) API_ShareBookmark(c echo.Context) error {
+func (app *App) ApiShareBookmark(c echo.Context) error {
 	shareHash, err := app.DB.ShareBookmark(c.Param("hash"))
 	if err != nil {
-		return c.JSON(http.StatusOK, status.API_InternalError(err))
+		return c.JSON(http.StatusInternalServerError, status.ApiInternalError(err))
 	}
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"status":     http.StatusOK,
 		"share_hash": shareHash,
 	})
 }
@@ -197,11 +196,11 @@ func (app *App) API_ShareBookmark(c echo.Context) error {
 /////////////////////////////// FOLDER FUNCTIONS ///////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// API_GetFolders gets all folders
-func (app *App) API_GetFolders(c echo.Context) error {
+// ApiGetFolders gets all folders
+func (app *App) ApiGetFolders(c echo.Context) error {
 	user := c.Get("user")
 	if user == nil {
-		return c.JSON(http.StatusOK, status.API_GeneralAccesError())
+		return c.JSON(http.StatusOK, status.ApiGeneralAccesError())
 	}
 
 	token := user.(*jwt.Token)
@@ -214,11 +213,11 @@ func (app *App) API_GetFolders(c echo.Context) error {
 	})
 }
 
-// API_GetSubFolders gets all subfolders from a parent folder
-func (app *App) API_GetSubFolders(c echo.Context) error {
+// ApiGetSubFolders gets all subfolders from a parent folder
+func (app *App) ApiGetSubFolders(c echo.Context) error {
 	user := c.Get("user")
 	if user == nil {
-		return c.JSON(http.StatusOK, status.API_GeneralAccesError())
+		return c.JSON(http.StatusOK, status.ApiGeneralAccesError())
 	}
 
 	token := user.(*jwt.Token)
@@ -231,13 +230,13 @@ func (app *App) API_GetSubFolders(c echo.Context) error {
 	})
 }
 
-// API_PostFolder saves a folder
-func (app *App) API_PostFolder(c echo.Context) error {
+// ApiPostFolder saves a folder
+func (app *App) ApiPostFolder(c echo.Context) error {
 	// app := c.Get("app").(*app.App)
 
 	// user := c.Get("user")
 	// if user == nil {
-	// 	return c.JSON(http.StatusOK, status.API_GeneralAccesError())
+	// 	return c.JSON(http.StatusOK, status.ApiGeneralAccesError())
 	// }
 
 	// token := user.(*jwt.Token)
@@ -258,15 +257,15 @@ func (app *App) API_PostFolder(c echo.Context) error {
 	// }
 
 	// app.DB.SaveFolder(f)
-	return c.JSON(http.StatusOK, status.API_GeneralSuccess())
+	return c.JSON(http.StatusOK, status.ApiGeneralSuccess())
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// EVENT FUNCTIONS ///////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func (app *App) API_PostEvent(c echo.Context) error {
+func (app *App) ApiPostEvent(c echo.Context) error {
 	job := app.Scheduler.Job(c.FormValue("event-type"), c.FormValue("event-data"))
 	go app.Scheduler.Schedule(job)
-	return c.JSON(http.StatusOK, status.API_GeneralSuccess())
+	return c.JSON(http.StatusOK, status.ApiGeneralSuccess())
 }

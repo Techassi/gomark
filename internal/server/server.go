@@ -78,42 +78,35 @@ func (s *Server) Run() {
 	s.Mux.Static("/archive", filepath.Join(s.App.Config.WebRoot, cnst.FS_ARCHIVE_DIR))
 
 	// Unprotected routes
-	s.Mux.GET("/code", s.App.UI_2FACodePage)
-	s.Mux.GET("/login", s.App.UI_LoginPage)
-	s.Mux.GET("/register", s.App.UI_RegisterPage)
-	s.Mux.GET("/s/:hash", s.App.UI_SharedEntityPage)
+	s.Mux.GET("/code", s.App.Ui2FACodePage)
+	s.Mux.GET("/login", s.App.UiLoginPage)
+	s.Mux.GET("/register", s.App.UiRegisterPage)
+	s.Mux.GET("/s/:hash", s.App.UiSharedEntityPage)
 
-	s.Mux.POST("/auth/login", s.App.AUTH_Login)
-	s.Mux.POST("/auth/register", s.App.AUTH_Register)
+	s.Mux.POST("/auth/login", s.App.AuthLogin)
+	s.Mux.POST("/auth/register", s.App.AuthRegister)
 
 	// Custom 404 error page
-	s.Mux.GET("/404", s.App.UI_404Page)
-
-	s.Mux.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			c.Set("app", s.App)
-			return next(c)
-		}
-	})
+	s.Mux.GET("/404", s.App.Ui404Page)
 
 	// Configure the JWT setting to use in the middleware
 	jwtConfig := middleware.JWTConfig{
 		SigningKey:              []byte(s.App.Config.Security.Jwt.Secret),
 		TokenLookup:             "cookie:Authorization",
-		ErrorHandlerWithContext: s.App.AUTH_JWTError,
+		ErrorHandlerWithContext: s.App.AuthJWTError,
 	}
 
 	// Protected routes
 	pr := s.Mux.Group("/")
-	// pr.Use(middleware.JWTWithConfig(jwtConfig))
+	pr.Use(middleware.JWTWithConfig(jwtConfig))
 
-	pr.GET("", s.App.UI_HomePage)
-	pr.GET("/notes", s.App.UI_NotesPage)
-	pr.GET("/shared", s.App.UI_SharedPage)
-	pr.GET("/recent", s.App.UI_RecentBookmarksPage)
-	pr.GET("/bookmarks", s.App.UI_BookmarksPage)
-	pr.GET("/b/:hash", s.App.UI_BookmarkPage)
-	pr.GET("/n/:hash", s.App.UI_NotePage)
+	pr.GET("", s.App.UiHomePage)
+	pr.GET("/notes", s.App.UiNotesPage)
+	pr.GET("/shared", s.App.UiSharedPage)
+	pr.GET("/recent", s.App.UiRecentBookmarksPage)
+	pr.GET("/bookmarks", s.App.UiBookmarksPage)
+	pr.GET("/b/:hash", s.App.UiBookmarkPage)
+	pr.GET("/n/:hash", s.App.UiNotePage)
 
 	// API routes
 	api := s.Mux.Group("/api")
@@ -121,27 +114,27 @@ func (s *Server) Run() {
 
 	// v1 API routes
 	v1 := api.Group("/v1")
-	v1.GET("/recent", s.App.API_GetRecentBookmarks)
-	v1.GET("/bookmarks", s.App.API_GetBookmarks)
-	v1.GET("/bookmarks/:hash", s.App.API_GetBookmark)
-	v1.GET("/folders", s.App.API_GetFolders)
-	v1.GET("/folders/:hash", s.App.API_GetSubFolders)
+	v1.GET("/recent", s.App.ApiGetRecentBookmarks)
+	v1.GET("/bookmarks", s.App.ApiGetBookmarks)
+	v1.GET("/bookmarks/:hash", s.App.ApiGetBookmark)
+	v1.GET("/folders", s.App.ApiGetFolders)
+	v1.GET("/folders/:hash", s.App.ApiGetSubFolders)
 
-	v1.POST("/bookmark", s.App.API_PostBookmark)
-	v1.POST("/bookmark/:hash", s.App.API_UpdateBookmark)
-	v1.POST("/bookmark/:hash/share", s.App.API_ShareBookmark)
-	v1.POST("/folder", s.App.API_PostFolder)
-	v1.POST("/folder/:hash", s.App.API_PostEntityToFolder)
+	v1.POST("/bookmark", s.App.ApiPostBookmark)
+	v1.POST("/bookmark/:hash", s.App.ApiUpdateBookmark)
+	v1.POST("/bookmark/:hash/share", s.App.ApiShareBookmark)
+	v1.POST("/folder", s.App.ApiPostFolder)
+	v1.POST("/folder/:hash", s.App.ApiPostEntityToFolder)
 
 	// Event endpoint
-	v1.POST("/event", s.App.API_PostEvent)
+	v1.POST("/event", s.App.ApiPostEvent)
 
 	// Auth routes
 	auth := s.Mux.Group("/auth")
 	auth.Use(middleware.JWTWithConfig(jwtConfig))
 
-	auth.POST("/code", s.App.AUTH_2FACode)
-	auth.POST("/code/create", s.App.AUTH_Create2FACode)
+	auth.POST("/code", s.App.Auth2FACode)
+	auth.POST("/code/create", s.App.AuthCreate2FACode)
 
 	// Startup the router
 	port := fmt.Sprintf(":%s", strconv.Itoa(s.Port))

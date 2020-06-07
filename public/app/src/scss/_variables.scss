@@ -1,0 +1,14 @@
+$primary-accent: #3772ff;
+$primary-white: #ffffff;
+$primary-black: #1b2945;
+$primary-bg: #f7f8fa;
+
+$secondary-grey: #ebedee;
+
+@media (prefers-color-scheme: dark) {
+    $primary-accent: #3772ff;
+    $primary-white: #ffffff;
+    $primary-bg: #f7f8fa;
+
+    $secondary-grey: #ebedee;
+}

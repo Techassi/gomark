@@ -10,15 +10,15 @@ import (
 ///////////////////////////// AUTHENTICATION PAGES /////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func (app *App) UI_LoginPage(c echo.Context) error {
+func (app *App) UiLoginPage(c echo.Context) error {
 	return c.Render(http.StatusOK, "login.html", map[string]interface{}{})
 }
 
-func (app *App) UI_2FACodePage(c echo.Context) error {
+func (app *App) Ui2FACodePage(c echo.Context) error {
 	return c.Render(http.StatusOK, "code.html", map[string]interface{}{})
 }
 
-func (app *App) UI_RegisterPage(c echo.Context) error {
+func (app *App) UiRegisterPage(c echo.Context) error {
 	if !app.RegisterEnabled() {
 		return c.Redirect(http.StatusMovedPermanently, "/login")
 	}
@@ -30,7 +30,7 @@ func (app *App) UI_RegisterPage(c echo.Context) error {
 ////////////////////////////////// ERROR PAGES /////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func (app *App) UI_404Page(c echo.Context) error {
+func (app *App) Ui404Page(c echo.Context) error {
 	return c.Render(http.StatusOK, "404.html", map[string]interface{}{})
 }
 
@@ -38,22 +38,22 @@ func (app *App) UI_404Page(c echo.Context) error {
 //////////////////////////////// BOOKMARK PAGES ////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func (app *App) UI_SharedEntityPage(c echo.Context) error {
+func (app *App) UiSharedEntityPage(c echo.Context) error {
 	return c.Render(http.StatusOK, "shared-entity.html", map[string]interface{}{
 		"config": app.Config,
 		"entity": app.DB.GetShared(c.Param("hash")),
 	})
 }
 
-func (app *App) UI_RecentBookmarksPage(c echo.Context) error {
+func (app *App) UiRecentBookmarksPage(c echo.Context) error {
 	return c.Render(http.StatusOK, "recent-bookmarks.html", map[string]interface{}{})
 }
 
-func (app *App) UI_BookmarksPage(c echo.Context) error {
+func (app *App) UiBookmarksPage(c echo.Context) error {
 	return c.Render(http.StatusOK, "bookmarks.html", map[string]interface{}{})
 }
 
-func (app *App) UI_BookmarkPage(c echo.Context) error {
+func (app *App) UiBookmarkPage(c echo.Context) error {
 	return c.Render(http.StatusOK, "bookmark.html", map[string]interface{}{})
 }
 
@@ -61,11 +61,11 @@ func (app *App) UI_BookmarkPage(c echo.Context) error {
 ////////////////////////////////// NOTE PAGES //////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func (app *App) UI_NotePage(c echo.Context) error {
+func (app *App) UiNotePage(c echo.Context) error {
 	return c.Render(http.StatusOK, "note.html", map[string]interface{}{})
 }
 
-func (app *App) UI_NotesPage(c echo.Context) error {
+func (app *App) UiNotesPage(c echo.Context) error {
 	return c.Render(http.StatusOK, "notes.html", map[string]interface{}{})
 }
 
@@ -73,8 +73,8 @@ func (app *App) UI_NotesPage(c echo.Context) error {
 //////////////////////////////// DASHBOARD PAGES ///////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// UI_HomePage renders the home page
-func (app *App) UI_HomePage(c echo.Context) error {
+// UiHomePage renders the home page
+func (app *App) UiHomePage(c echo.Context) error {
 	// user := c.Get("user")
 	// if user == nil {
 	// 	return c.Redirect(http.StatusMovedPermanently, "/login")
@@ -95,6 +95,6 @@ func (app *App) UI_HomePage(c echo.Context) error {
 ///////////////////////////////// SHARED PAGES /////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func (app *App) UI_SharedPage(c echo.Context) error {
+func (app *App) UiSharedPage(c echo.Context) error {
 	return c.Render(http.StatusOK, "shared.html", map[string]interface{}{})
 }
