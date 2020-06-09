@@ -3,8 +3,14 @@
         <div class="nav__side--icon add">
             <i class="gg-add-r"></i>
         </div>
-        <div class="nav__side--icon add">
+        <div class="nav__side--icon notes">
             <i class="gg-notes"></i>
+        </div>
+        <div class="nav__side--icon album">
+            <i class="gg-album"></i>
+        </div>
+        <div class="nav__side--icon share">
+            <i class="gg-share"></i>
         </div>
     </nav>
 </template>
@@ -19,7 +25,7 @@ export default {
 .nav__side {
     position: fixed;
     display: grid;
-    grid-template-rows: 56px 56px;
+    grid-template-rows: 56px 56px 56px 56px;
     width: 56px;
     height: 100%;
     padding: 84px 0 0 0;
@@ -34,12 +40,16 @@ export default {
         transition: 0.2s;
         cursor: pointer;
 
+        --ggs: 0.8;
+
         &:hover {
             color: $primary-accent;
         }
 
-        &.add {
-            --ggs: 0.8;
+        &.share {
+            i {
+                margin: 0 0 0 -6px;
+            }
         }
     }
 }

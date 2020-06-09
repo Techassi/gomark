@@ -69,25 +69,21 @@ func (s *Server) Init(app *app.App) {
 // will recover, print a stack trace and the HTTPErrorHandler handles the panic.
 func (s *Server) Run() {
 	// Static routes
-	s.Mux.Static("/js", util.AbsolutePath("public/js/dist"))
-	s.Mux.Static("/css", util.AbsolutePath("public/scss"))
-	s.Mux.Static("/font", util.AbsolutePath("public/assets/fonts"))
+	s.Mux.Static("/", util.AbsolutePath("app/dist"))
+	s.Mux.Static("/js", util.AbsolutePath("app/dist/js"))
+	s.Mux.Static("/css", util.AbsolutePath("app/dist/css"))
+	s.Mux.Static("/img", util.AbsolutePath("app/dist/img"))
 
 	// Image and archive routes
 	s.Mux.Static("/image", filepath.Join(s.App.Config.WebRoot, cnst.FS_IMAGE_DIR))
 	s.Mux.Static("/archive", filepath.Join(s.App.Config.WebRoot, cnst.FS_ARCHIVE_DIR))
 
-	// Unprotected routes
-	s.Mux.GET("/code", s.App.Ui2FACodePage)
-	s.Mux.GET("/login", s.App.UiLoginPage)
-	s.Mux.GET("/register", s.App.UiRegisterPage)
-	s.Mux.GET("/s/:hash", s.App.UiSharedEntityPage)
-
+	// Auth routes
 	s.Mux.POST("/auth/login", s.App.AuthLogin)
 	s.Mux.POST("/auth/register", s.App.AuthRegister)
 
 	// Custom 404 error page
-	s.Mux.GET("/404", s.App.Ui404Page)
+	// s.Mux.GET("/404", s.App.Ui404Page)
 
 	// Configure the JWT setting to use in the middleware
 	jwtConfig := middleware.JWTConfig{
@@ -95,18 +91,6 @@ func (s *Server) Run() {
 		TokenLookup:             "cookie:Authorization",
 		ErrorHandlerWithContext: s.App.AuthJWTError,
 	}
-
-	// Protected routes
-	pr := s.Mux.Group("/")
-	pr.Use(middleware.JWTWithConfig(jwtConfig))
-
-	pr.GET("", s.App.UiHomePage)
-	pr.GET("/notes", s.App.UiNotesPage)
-	pr.GET("/shared", s.App.UiSharedPage)
-	pr.GET("/recent", s.App.UiRecentBookmarksPage)
-	pr.GET("/bookmarks", s.App.UiBookmarksPage)
-	pr.GET("/b/:hash", s.App.UiBookmarkPage)
-	pr.GET("/n/:hash", s.App.UiNotePage)
 
 	// API routes
 	api := s.Mux.Group("/api")
