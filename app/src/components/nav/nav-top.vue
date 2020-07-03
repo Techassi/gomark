@@ -24,8 +24,8 @@ export default {
     column-gap: 28px;
     width: 100%;
     height: 56px;
-    background-color: $primary-white;
-    border-bottom: 2px solid $secondary-grey;
+    background-color: #fafbfc;
+    border-bottom: 1px solid #e1e4e8;
     z-index: 20;
 
     &--logo {

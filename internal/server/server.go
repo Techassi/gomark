@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"net/http"
 	"path/filepath"
 	"strconv"
 
@@ -120,6 +121,8 @@ func (s *Server) Run() {
 	auth.POST("/code", s.App.Auth2FACode)
 	auth.POST("/code/create", s.App.AuthCreate2FACode)
 
+	s.Mux.HTTPErrorHandler = customHTTPErrorHandler
+
 	// Startup the router
 	port := fmt.Sprintf(":%s", strconv.Itoa(s.Port))
 	s.Mux.Logger.Fatal(s.Mux.Start(port))
@@ -138,4 +141,17 @@ func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c 
 	}
 
 	return t.Templates.ExecuteTemplate(w, name, data)
+}
+
+func customHTTPErrorHandler(err error, c echo.Context) {
+	code := http.StatusInternalServerError
+	if he, ok := err.(*echo.HTTPError); ok {
+		code = he.Code
+	}
+
+	if code == http.StatusNotFound {
+		c.Redirect(http.StatusMovedPermanently, "/")
+	}
+
+	c.Logger().Error(err)
 }

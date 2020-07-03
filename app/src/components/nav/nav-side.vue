@@ -29,8 +29,8 @@ export default {
     width: 56px;
     height: 100%;
     padding: 84px 0 0 0;
-    background-color: #fff;
-    border-right: 2px solid $secondary-grey;
+    background-color: #fafbfc;
+    border-right: 2px solid #e1e4e8;
     z-index: 10;
 
     &--icon {

@@ -28,6 +28,7 @@ type Bookmark struct {
 	Archived    bool   `json:"archived"`
 	Description string `json:"description" gorm:"size:500"`
 	URL         string `json:"url" gorm:"size:1000"`
+	FaviconURL  string `json:"favicon_url"`
 	ImageURL    string `json:"image_url"`
 	Content     string `json:"content"`
 }

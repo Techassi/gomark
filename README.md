@@ -24,4 +24,4 @@ Web-based bookmark manager written in GO. CURRENTLY IN DEVELOPMENT (NOT FEATURE-
 
 ## Todo
 
--   Remove Temp2FAToken from DB after login
+-   Download Favicon and OG image

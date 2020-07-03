@@ -1,7 +1,9 @@
 <template>
-    <main>
-        <router-view></router-view>
-    </main>
+    <div class="gomark">
+        <main>
+            <router-view></router-view>
+        </main>
+    </div>
 </template>
 
 <script>
@@ -13,12 +15,18 @@ export default {
 
 <style lang="scss">
 body {
-    background-color: $primary-bg;
+    background-color: #ffffff;
 }
 
 main {
     width: 100%;
     height: auto;
-    padding: 84px 56px 0 84px;
+    max-width: 1280px;
+    padding: 0 32px;
+    margin: 0 auto;
+}
+
+* {
+    color: $primary-black;
 }
 </style>
