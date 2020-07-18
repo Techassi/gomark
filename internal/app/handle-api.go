@@ -103,7 +103,7 @@ func (app *App) ApiPostEntityToFolder(c echo.Context) error {
 // ApiGetRecentBookmarks gets recent bookmarks
 func (app *App) ApiGetRecentBookmarks(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"entities": app.DB.GetBookmarksByUserID(1),
+		"entities": app.DB.GetRecentBookmarks(1),
 	})
 }
 
@@ -120,7 +120,7 @@ func (app *App) ApiGetBookmarks(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"status":    http.StatusOK,
-		"bookmarks": app.DB.GetBookmarksByUserID(userID),
+		"bookmarks": app.DB.GetBookmarks(userID),
 	})
 }
 

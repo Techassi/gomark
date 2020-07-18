@@ -1,13 +1,14 @@
 <template>
     <div class="recent__list--item">
-        <div class="image__wrapper"></div>
+        <div class="image__wrapper">
+            <img :src="imageURL(entity)" v-bind:alt="entity.name" />
+        </div>
         <h3>{{ entity.name }}</h3>
         <a
             v-bind:href="entity.bookmark.url"
             target="_blank"
             rel="noopener noreferrer"
-            >{{ entity.bookmark.url }}</a
-        >
+        >{{ entity.bookmark.url }}</a>
         <span>{{ this.trim(entity.bookmark.description, 100) }}</span>
     </div>
 </template>
@@ -19,6 +20,11 @@ export default {
         trim(s, l) {
             if (s.length == 0) return ''
             return s.length > l ? s.substring(0, l - 3) + '...' : s
+        },
+        imageURL(entity) {
+            return entity.image_url == ''
+                ? `image/fallback/image.jpg`
+                : `image/${entity.hash}/${entity.image_url}`
         },
     },
     props: {
@@ -58,7 +64,7 @@ export default {
     }
 
     a {
-        display: block;
+        display: inline-block;
         font-size: 1.2rem;
         line-height: 1.5;
     }

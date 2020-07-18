@@ -13,6 +13,7 @@ type Entity struct {
 	Hash       string     `json:"hash"`
 	Name       string     `json:"name"`
 	Pinned     bool       `json:"pinned"`
+	ImageURL   string     `json:"image_url"`
 	Bookmark   *Bookmark  `json:"bookmark"`
 	Folder     *Folder    `json:"folder"`
 	Note       *Note      `json:"note"`
@@ -29,7 +30,6 @@ type Bookmark struct {
 	Description string `json:"description" gorm:"size:500"`
 	URL         string `json:"url" gorm:"size:1000"`
 	FaviconURL  string `json:"favicon_url"`
-	ImageURL    string `json:"image_url"`
 	Content     string `json:"content"`
 }
 

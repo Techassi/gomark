@@ -10,12 +10,38 @@ const routes = [
         path: '/',
         name: 'Home',
         component: Home,
+        meta: {
+            title: 'Home | Gomark',
+            // metaTags: [
+            //   {
+            //     name: 'description',
+            //     content: 'The home page of our example app.'
+            //   },
+            //   {
+            //     property: 'og:description',
+            //     content: 'The home page of our example app.'
+            //   }
+            // ]
+        },
     },
     {
         path: '/all',
         name: 'All',
         component: () =>
             import(/* webpackChunkName: "all" */ '../views/All.vue'),
+        meta: {
+            title: 'All | Gomark',
+            // metaTags: [
+            //   {
+            //     name: 'description',
+            //     content: 'The home page of our example app.'
+            //   },
+            //   {
+            //     property: 'og:description',
+            //     content: 'The home page of our example app.'
+            //   }
+            // ]
+        },
     },
 ]
 
@@ -34,7 +60,7 @@ router.beforeEach((to, from, next) => {
     // if (authRequired && !loggedIn) {
     //     return next('/login')
     // }
-
+    document.title = to.meta.title
     next()
 })
 

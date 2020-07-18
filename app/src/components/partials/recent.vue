@@ -17,12 +17,13 @@ import axios from 'axios'
 import BookmarkRecent from '@/components/bookmark/bookmark-recent.vue'
 
 export default {
-    name: 'MostUsed',
+    name: 'Recent',
     mounted() {
         axios
             .get(`api/v1/recent`)
             .then(response => {
                 this.entities = response.data.entities
+                console.log(this.entities)
             })
             .catch(e => {
                 console.error(e)
@@ -42,9 +43,10 @@ export default {
 <style lang="scss" scoped>
 .main__recently {
     h2 {
-        margin: 0;
+        margin: 24px 0 0 0;
         font-size: 2rem;
         font-weight: 500;
+        display: inline-block;
     }
 
     .recent__list {

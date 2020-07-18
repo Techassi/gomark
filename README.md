@@ -24,4 +24,8 @@ Web-based bookmark manager written in GO. CURRENTLY IN DEVELOPMENT (NOT FEATURE-
 
 ## Todo
 
--   Download Favicon and OG image
+-   Download Favicon and OGP image
+-   Resize OGP image
+-   Write i18n plugin (Use Map)
+-   Add axios cache (https://www.npmjs.com/package/axios-cache-adapter)
+-   Simplify background scheduler

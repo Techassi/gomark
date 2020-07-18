@@ -41,6 +41,7 @@ type Result struct {
 	Title       string
 	Description string
 	Image       string
+	Favicon     string
 }
 
 type Archive struct {

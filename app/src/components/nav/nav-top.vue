@@ -1,11 +1,13 @@
 <template>
     <nav class="nav__top">
-        <router-link to="/" class="nav__top--logo">
-            <i class="gg-bookmark"></i>
-        </router-link>
-        <div class="nav__top--links">
-            <router-link to="/">Home</router-link>
-            <router-link to="/all">All</router-link>
+        <div class="nav__top--wrapper">
+            <router-link to="/" class="nav__top--logo">
+                <i class="gg-bookmark"></i>
+            </router-link>
+            <div class="nav__top--links">
+                <router-link to="/">Home</router-link>
+                <router-link to="/all">All</router-link>
+            </div>
         </div>
     </nav>
 </template>
@@ -19,14 +21,23 @@ export default {
 <style lang="scss" scoped>
 .nav__top {
     position: fixed;
-    display: grid;
-    grid-template-columns: 56px 2fr 1fr;
-    column-gap: 28px;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 56px;
     background-color: #fafbfc;
     border-bottom: 1px solid #e1e4e8;
     z-index: 20;
+
+    &--wrapper {
+        height: 100%;
+        max-width: 1280px;
+        padding: 0 32px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 56px 2fr 1fr;
+        column-gap: 28px;
+    }
 
     &--logo {
         display: flex;

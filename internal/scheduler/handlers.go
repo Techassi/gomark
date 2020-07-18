@@ -114,7 +114,7 @@ func HandleDownloadMeta(job Job) {
 	favicon, _ := doc.Find("link[rel=\"icon\"]").First().Attr("href")
 	shortcut, _ := doc.Find("link[rel=\"shortcut icon\"]").Last().Attr("href")
 	ogpTitle, _ := doc.Find("meta[property=\"og:title\"]").Last().Attr("content")
-	// ogpImage, _ := doc.Find("meta[property=\"og:image\"]").First().Attr("content")
+	ogpImage, _ := doc.Find("meta[property=\"og:image\"]").First().Attr("content")
 	ogpDesc, _ := doc.Find("meta[property=\"og:description\"]").First().Attr("content")
 
 	if ogpTitle != "" {
@@ -132,7 +132,8 @@ func HandleDownloadMeta(job Job) {
 	job.Result = Result{
 		Title:       title,
 		Description: desc,
-		Image:       favicon,
+		Favicon:     favicon,
+		Image:       ogpImage,
 	}
 	job.Entity = e
 
@@ -181,8 +182,12 @@ func HandleSave(job Job) {
 		e.Bookmark.Description = job.Result.Description
 	}
 
-	if e.Bookmark.ImageURL == "" {
-		e.Bookmark.ImageURL = job.Result.Image
+	if e.Bookmark.FaviconURL == "" {
+		e.Bookmark.FaviconURL = job.Result.Favicon
+	}
+
+	if e.ImageURL == "" {
+		e.ImageURL = job.Result.Image
 	}
 
 	job.Scheduler.DB.SaveEntity(e)

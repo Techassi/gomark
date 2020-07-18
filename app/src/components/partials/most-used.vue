@@ -8,9 +8,10 @@
 <style lang="scss" scoped>
 .main__most-used {
     h2 {
-        margin: 0;
+        margin: 24px 0 0 0;
         font-size: 2rem;
         font-weight: 500;
+        display: inline-block;
     }
 
     .most-used__list {

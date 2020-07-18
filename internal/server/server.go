@@ -2,15 +2,12 @@ package server
 
 import (
 	"fmt"
-	"html/template"
-	"io"
 	"net/http"
 	"path/filepath"
 	"strconv"
 
 	"github.com/Techassi/gomark/internal/app"
 	cnst "github.com/Techassi/gomark/internal/constants"
-	tpl "github.com/Techassi/gomark/internal/templating"
 	"github.com/Techassi/gomark/internal/util"
 
 	"github.com/labstack/echo/v4"
@@ -43,16 +40,6 @@ func (s *Server) Init(app *app.App) {
 	// Hide startup message
 	s.Mux.HideBanner = true
 
-	f := template.FuncMap{
-		"FormatNoImage": tpl.FormatNoImage,
-		"FormatColor":   tpl.FormatColor,
-	}
-
-	// Register template renderer
-	s.Mux.Renderer = &TemplateRenderer{
-		Templates: template.Must(tpl.CompileTemplates(util.AbsolutePath("templates/*/*.html"), f)),
-	}
-
 	// Register middlewares
 	s.Mux.Use(middleware.Logger())
 	s.Mux.Use(middleware.Recover())
@@ -77,6 +64,7 @@ func (s *Server) Run() {
 
 	// Image and archive routes
 	s.Mux.Static("/image", filepath.Join(s.App.Config.WebRoot, cnst.FS_IMAGE_DIR))
+	s.Mux.Static("/image/fallback", util.AbsolutePath("public/fallback"))
 	s.Mux.Static("/archive", filepath.Join(s.App.Config.WebRoot, cnst.FS_ARCHIVE_DIR))
 
 	// Auth routes
@@ -126,21 +114,6 @@ func (s *Server) Run() {
 	// Startup the router
 	port := fmt.Sprintf(":%s", strconv.Itoa(s.Port))
 	s.Mux.Logger.Fatal(s.Mux.Start(port))
-}
-
-// TemplateRenderer is a custom html/template renderer for Echo framework
-type TemplateRenderer struct {
-	Templates *template.Template
-}
-
-// Render renders a template document
-func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
-	// Add global methods if data is a map
-	if viewContext, isMap := data.(map[string]interface{}); isMap {
-		viewContext["reverse"] = c.Echo().Reverse
-	}
-
-	return t.Templates.ExecuteTemplate(w, name, data)
 }
 
 func customHTTPErrorHandler(err error, c echo.Context) {
